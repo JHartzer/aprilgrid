@@ -1,0 +1,9 @@
+{
+	"[cpp]": {
+		"editor.wordBasedSuggestions": "off",
+		"editor.semanticHighlighting.enabled": true,
+		"editor.suggest.insertMode": "replace",
+		"editor.insertSpaces": true,
+		"editor.tabSize": 2
+	},
+}
