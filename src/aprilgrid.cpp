@@ -1,6 +1,7 @@
 #include "aprilgrid.hpp"
 
 #include <algorithm>
+#include <opencv2/calib3d.hpp>
 #include <opencv2/opencv.hpp>
 #include <random>
 #include <stdexcept>
@@ -8,17 +9,17 @@
 bool ENABLE_DEBUGGING{true};
 
 AprilGrid::AprilGrid(cv::aruco::PredefinedDictionaryType dict,
-                     unsigned int border_bits,
-                     unsigned int separation_bits_,
-                     unsigned int n_rows_,
-                     unsigned int n_cols_,
-                     double marker_size_)
+                     unsigned int border_bit,
+                     unsigned int separation_bits,
+                     unsigned int n_rows,
+                     unsigned int n_cols,
+                     double marker_size)
     : dict_(dict),
-      border_bits_(border_bits),
-      separation_bits_(separation_bits_),
-      n_rows_(n_rows_),
-      n_cols_(n_cols_),
-      marker_size_(marker_size_) {
+      border_bits_(border_bit),
+      separation_bits_(separation_bits),
+      n_rows_(n_rows),
+      n_cols_(n_cols),
+      marker_size_(marker_size) {
   auto apriltag_data = APRILTAG_DATA_DICT.find(dict);
   if (apriltag_data == APRILTAG_DATA_DICT.end()) {
     throw std::invalid_argument("AprilGrid: Invalid dictionary type!");
@@ -183,47 +184,6 @@ std::vector<AprilGrid::Detection> AprilGrid::detectTags(const cv::Mat &image_in)
   }
 
   std::vector<Detection> detections = decodeCorner(final_corners_for_decode, image_in);
-
-  if (ENABLE_DEBUGGING) {
-    cv::Mat img_color;
-    cv::cvtColor(image_in, img_color, cv::COLOR_GRAY2BGR);
-    for (const auto &det : detections) {
-      // Calculate center of corners
-      cv::Point2f center_sum(0.0f, 0.0f);
-      for (int k = 0; k < 4; ++k) {
-        center_sum.x += det.corners[k].x;
-        center_sum.y += det.corners[k].y;
-      }
-      cv::Point center(static_cast<int>(std::round(center_sum.x / 4.0f)),
-                       static_cast<int>(std::round(center_sum.y / 4.0f)));
-
-      // Draw tag ID
-      cv::putText(img_color,
-                  std::to_string(det.tag_id),
-                  center,
-                  cv::FONT_HERSHEY_SIMPLEX,
-                  2,
-                  cv::Scalar(0, 0, 255),
-                  2);
-
-      // Draw corner IDs and circles
-      for (int k = 0; k < 4; ++k) {
-        cv::Point corner(static_cast<int>(std::round(det.corners[k].x)),
-                         static_cast<int>(std::round(det.corners[k].y)));
-        cv::putText(img_color,
-                    std::to_string(det.tag_id + k),
-                    corner,
-                    cv::FONT_HERSHEY_SIMPLEX,
-                    2,
-                    cv::Scalar(0, 0, 255),
-                    2);
-        cv::circle(img_color, corner, 3, cv::Scalar(0, 255, 0), cv::FILLED);
-      }
-    }
-
-    cv::imshow("im", img_color);
-    cv::waitKey(0);
-  }
 
   return detections;
 }
@@ -428,11 +388,11 @@ void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
                                       cv::Vec3d &t_vec) {
   auto aprilgrid_detections = detectTags(image_in);
   std::vector<cv::Point3f> planar_corners;
-  float bit_size = marker_size_ / float(tag_bits_);
+  float bit_size = float(marker_size_) / float(tag_bits_);
   for (unsigned int row = 0; row < n_rows_; row++) {
     for (unsigned int col = 0; col < n_cols_; col++) {
-      float off_x = row * (tag_bits_ + separation_bits_) * bit_size;
-      float off_y = col * (tag_bits_ + separation_bits_) * bit_size;
+      float off_x = col * (tag_bits_ + separation_bits_) * bit_size;
+      float off_y = row * (tag_bits_ + separation_bits_) * bit_size;
       planar_corners.push_back(cv::Point3f(off_x, off_y, 0));
       planar_corners.push_back(cv::Point3f(off_x + marker_size_, off_y, 0));
       planar_corners.push_back(cv::Point3f(off_x, off_y + marker_size_, 0));
@@ -449,9 +409,60 @@ void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
 
   cv::solvePnP(planar_corners, flat_corners, camera_matrix, dist_coeffs, r_vec, t_vec);
 
-  cv::Mat image_copy;
-  cv::cvtColor(image_in, image_copy, cv::COLOR_GRAY2RGB);
-  cv::drawFrameAxes(image_copy, camera_matrix, dist_coeffs, r_vec, t_vec, 10.0);
-  cv::imshow("Estimated Axis", image_copy);
-  cv::waitKey(0);
+  if (ENABLE_DEBUGGING) {
+    cv::Mat img_color;
+    cv::cvtColor(image_in, img_color, cv::COLOR_GRAY2BGR);
+    for (const auto &det : aprilgrid_detections) {
+      // Calculate center of corners
+      cv::Point2f center_sum(0.0f, 0.0f);
+      for (int k = 0; k < 4; ++k) {
+        center_sum.x += det.corners[k].x;
+        center_sum.y += det.corners[k].y;
+      }
+      cv::Point center(static_cast<int>(std::round(center_sum.x / 4.0f)),
+                       static_cast<int>(std::round(center_sum.y / 4.0f)));
+
+      // Draw tag ID
+      cv::putText(img_color,
+                  std::to_string(det.tag_id),
+                  center,
+                  cv::FONT_HERSHEY_SIMPLEX,
+                  2,
+                  cv::Scalar(0, 0, 255),
+                  2);
+
+      // Draw corner IDs and circles
+      for (int k = 0; k < 4; ++k) {
+        cv::Point corner(static_cast<int>(std::round(det.corners[k].x)),
+                         static_cast<int>(std::round(det.corners[k].y)));
+        cv::putText(img_color,
+                    std::to_string(det.tag_id + k),
+                    corner,
+                    cv::FONT_HERSHEY_SIMPLEX,
+                    2,
+                    cv::Scalar(0, 0, 255),
+                    2);
+        cv::circle(img_color, corner, 3, cv::Scalar(0, 255, 0), cv::FILLED);
+      }
+    }
+
+    std::vector<cv::Point2f> projected_corners;
+    cv::projectPoints(planar_corners, r_vec, t_vec, camera_matrix, dist_coeffs, projected_corners);
+    for (unsigned int i = 0; i < flat_corners.size(); ++i) {
+      cv::line(img_color,
+               cv::Point(projected_corners[i].x, flat_corners[i].x),
+               cv::Point(projected_corners[i].y, flat_corners[i].y),
+               random_color(),
+               2);
+    }
+
+    cv::imshow("Reprojection", img_color);
+    cv::waitKey(0);
+
+    cv::Mat image_copy;
+    cv::cvtColor(image_in, image_copy, cv::COLOR_GRAY2RGB);
+    cv::drawFrameAxes(image_copy, camera_matrix, dist_coeffs, r_vec, t_vec, 10.0);
+    cv::imshow("Estimated Axis", image_copy);
+    cv::waitKey(0);
+  }
 }

@@ -187,7 +187,7 @@ class AprilGrid {
   unsigned int separation_bits_;
   unsigned int n_rows_;
   unsigned int n_cols_;
-  unsigned int marker_size_;
+  double marker_size_;
 
   // Pulled from AprilGrid data dictionary
   unsigned int tag_bits_;

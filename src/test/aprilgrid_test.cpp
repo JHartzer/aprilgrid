@@ -21,10 +21,10 @@ TEST(test_detector, aprilgrid_b2) {
   cv::Vec3d r_vec;
   cv::Vec3d t_vec;
   cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64F);
-  camera_matrix.at<double>(0, 0) = 458.9432286546919;
-  camera_matrix.at<double>(1, 1) = 457.5637533402653;
-  camera_matrix.at<double>(0, 2) = 367.0272509347057;
-  camera_matrix.at<double>(1, 2) = 249.3128033381081;
+  camera_matrix.at<double>(0, 0) = 500.0;
+  camera_matrix.at<double>(1, 1) = 500.0;
+  camera_matrix.at<double>(0, 2) = 512.0;
+  camera_matrix.at<double>(1, 2) = 512.0;
   cv::Mat dist_coeffs{0, 0, 0, 0};
 
   detector.estimatePoseAprilGrid(img, camera_matrix, dist_coeffs, r_vec, t_vec);
