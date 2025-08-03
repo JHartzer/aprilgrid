@@ -15,7 +15,7 @@
 namespace fs = std::filesystem;
 
 TEST(test_detector, aprilgrid_b2) {
-  auto detector = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.088);
+  auto detector = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1);
   auto img = cv::imread(fs::current_path() / "../src/test/aprilgrid_6x6.png", cv::IMREAD_GRAYSCALE);
 
   cv::Vec3d r_vec;
