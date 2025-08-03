@@ -367,14 +367,17 @@ void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
   std::vector<cv::Point3f> predicted_corners;
   float bit_size = float(marker_size_) / float(marker_bits_);
   float tag_size = tag_bits_ * bit_size;
+  float grid_size = (marker_bits_ + separation_bits_) * bit_size;
+  float grid_width = (marker_bits_ * n_cols_ + (n_cols_ - 1) * separation_bits_) * bit_size;
   for (unsigned int row = 0; row < n_rows_; row++) {
     for (unsigned int col = 0; col < n_cols_; col++) {
-      float off_x = col * (marker_bits_ + separation_bits_) * bit_size;
-      float off_y = row * (marker_bits_ + separation_bits_) * bit_size;
-      predicted_corners.push_back(cv::Point3f(off_x + marker_size_, off_y, 0));
-      predicted_corners.push_back(cv::Point3f(off_x, off_y, 0));
-      predicted_corners.push_back(cv::Point3f(off_x, off_y + marker_size_, 0));
-      predicted_corners.push_back(cv::Point3f(off_x + marker_size_, off_y + marker_size_, 0));
+      float off_x = col * grid_size;
+      float off_y = row * grid_size;
+      predicted_corners.push_back(cv::Point3f(grid_width - (off_x + marker_size_), off_y, 0));
+      predicted_corners.push_back(cv::Point3f(grid_width - off_x, off_y, 0));
+      predicted_corners.push_back(cv::Point3f(grid_width - off_x, off_y + marker_size_, 0));
+      predicted_corners.push_back(
+          cv::Point3f(grid_width - (off_x + marker_size_), off_y + marker_size_, 0));
     }
   }
 
