@@ -27,7 +27,7 @@ TEST(test_detector, aprilgrid_b2) {
   camera_matrix.at<double>(1, 2) = 512.0;
   cv::Mat dist_coeffs{0, 0, 0, 0};
 
-  detector.estimatePoseAprilGrid(img, camera_matrix, dist_coeffs, r_vec, t_vec);
+  detector.estimatePoseAprilGrid(img, camera_matrix, dist_coeffs, r_vec, t_vec, false);
 
   std::cout << r_vec << std::endl;
   std::cout << t_vec << std::endl;

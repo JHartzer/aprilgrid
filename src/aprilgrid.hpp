@@ -27,7 +27,8 @@ class AprilGrid {
                              const cv::Mat &camera_matrix,
                              const cv::Mat &dist_coeffs,
                              cv::Vec3d &r_vec,
-                             cv::Vec3d &t_vec);
+                             cv::Vec3d &t_vec,
+                             bool show_debug = false);
 
   typedef struct AprilTagData {
     unsigned int tag_bits;
@@ -199,6 +200,7 @@ class AprilGrid {
   unsigned int marker_bits_;
   unsigned int min_cluster_pixels_;
   cv::Mat tag_bit_list_;
+  std::vector<cv::Point3f> predicted_corners_;
 
   // Other options
   const unsigned int MIN_WHITE_BLACK_DIFF{5};
