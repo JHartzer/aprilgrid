@@ -80,9 +80,9 @@ cv::Scalar AprilGrid::random_color() {
   return cv::Scalar(distribution(rng), distribution(rng), distribution(rng));
 }
 
-cv::Mat AprilGrid::poolImage(const cv::Mat &arr, int block_size, bool use_max) {
-  unsigned int h = arr.rows;
-  unsigned int w = arr.cols;
+cv::Mat AprilGrid::poolImage(const cv::Mat &image_in, int block_size, bool use_max) {
+  unsigned int h = image_in.rows;
+  unsigned int w = image_in.cols;
 
   unsigned int h_cropped = h - (h % block_size);
   unsigned int w_cropped = w - (w % block_size);
@@ -90,12 +90,12 @@ cv::Mat AprilGrid::poolImage(const cv::Mat &arr, int block_size, bool use_max) {
   unsigned int hs = h_cropped / block_size;
   unsigned int ws = w_cropped / block_size;
 
-  cv::Mat pooled_arr(hs, ws, arr.type());
+  cv::Mat pooled_img(hs, ws, image_in.type());
 
   // Process blocks for CV_8U (most common case)
-  if (arr.type() == CV_8U) {
-    const uchar *data = arr.ptr<uchar>();
-    uchar *pooled_data = pooled_arr.ptr<uchar>();
+  if (image_in.type() == CV_8U) {
+    const uchar *data = image_in.ptr<uchar>();
+    uchar *pooled_data = pooled_img.ptr<uchar>();
 
     for (unsigned int i = 0; i < hs; ++i) {
       for (unsigned int j = 0; j < ws; ++j) {
@@ -119,7 +119,7 @@ cv::Mat AprilGrid::poolImage(const cv::Mat &arr, int block_size, bool use_max) {
   } else {
     // Fallback for other types
     cv::Rect roi(0, 0, w_cropped, h_cropped);
-    cv::Mat cropped_arr = arr(roi);
+    cv::Mat cropped_arr = image_in(roi);
 
     for (unsigned int i = 0; i < hs; ++i) {
       for (unsigned int j = 0; j < ws; ++j) {
@@ -133,15 +133,15 @@ cv::Mat AprilGrid::poolImage(const cv::Mat &arr, int block_size, bool use_max) {
           cv::minMaxLoc(current_block, &val, nullptr);
         }
 
-        if (arr.type() == CV_32F) {
-          pooled_arr.at<float>(i, j) = static_cast<float>(val);
-        } else if (arr.type() == CV_64F) {
-          pooled_arr.at<double>(i, j) = static_cast<double>(val);
+        if (image_in.type() == CV_32F) {
+          pooled_img.at<float>(i, j) = static_cast<float>(val);
+        } else if (image_in.type() == CV_64F) {
+          pooled_img.at<double>(i, j) = static_cast<double>(val);
         }
       }
     }
   }
-  return pooled_arr;
+  return pooled_img;
 }
 
 std::vector<AprilGrid::Detection> AprilGrid::detectTags(const cv::Mat &image_in) {

@@ -6,15 +6,34 @@
 #include <unordered_map>
 #include <vector>
 
-/// @TODO: Add function for showing corner projection errors in board pose estimation
-/// @TODO: Add doxygen tags
+///
+/// @brief The AprilGrid class provides methods for detecting AprilGrid patterns and estimating
+/// their pose.
+///
+/// An AprilGrid is a specific arrangement of AprilTags in a grid, which can be used for robust
+/// camera calibration and pose estimation. This class handles the detection of individual tags
+/// and uses them collectively to determine the pose of the entire grid.
+/// @todo Add function for showing corner projection errors in board pose estimation.
+///
 class AprilGrid {
  public:
+  ///
+  /// @brief Struct containing data for a single detected AprilTag.
+  ///
   typedef struct Detection {
-    int tag_id;
-    std::vector<cv::Point2f> corners;
+    int tag_id;                        ///< @brief The decoded ID of the tag.
+    std::vector<cv::Point2f> corners;  ///< @brief The 4 corners of the tag in the image.
   } Detection;
 
+  ///
+  /// @brief Constructs an AprilGrid detector.
+  /// @param dict The predefined dictionary type for the AprilTags.
+  /// @param border_bits The number of black border bits around the tag.
+  /// @param separation_bits The number of bits separating adjacent tags in the grid.
+  /// @param n_rows The number of rows of tags in the grid.
+  /// @param n_cols The number of columns of tags in the grid.
+  /// @param marker_size The size of the marker in meters
+  ///
   AprilGrid(cv::aruco::PredefinedDictionaryType dict,
             unsigned int border_bits,
             unsigned int separation_bits,
@@ -22,7 +41,22 @@ class AprilGrid {
             unsigned int n_cols,
             double marker_size);
 
+  ///
+  /// @brief Detects AprilTags in an image.
+  /// @param image_in The input image (grayscale or BGR).
+  /// @return A vector of detected AprilTags.
+  ///
   std::vector<Detection> detectTags(const cv::Mat &image_in);
+
+  ///
+  /// @brief Estimates the pose of the AprilGrid from an image.
+  /// @param image_in The input image (grayscale or BGR).
+  /// @param camera_matrix The camera intrinsic matrix.
+  /// @param dist_coeffs The camera distortion coefficients.
+  /// @param r_vec Output rotation vector.
+  /// @param t_vec Output translation vector.
+  /// @param show_debug If true, displays a window with debug visualization.
+  ///
   void estimatePoseAprilGrid(const cv::Mat &image_in,
                              const cv::Mat &camera_matrix,
                              const cv::Mat &dist_coeffs,
@@ -30,17 +64,23 @@ class AprilGrid {
                              cv::Vec3d &t_vec,
                              bool show_debug = false);
 
+  ///
+  /// @brief Struct collecting data for a specific AprilTag dictionary.
+  ///
   typedef struct AprilTagData {
-    unsigned int tag_bits;
-    unsigned int min_distance;
-    unsigned int hamming_thresh;
-    const std::vector<long> codes;
+    unsigned int tag_bits;        ///< @brief The number of data bits in the tag (e.g., 4 for 16h5).
+    unsigned int min_distance;    ///< @brief The minimum Hamming distance between any two codes
+    unsigned int hamming_thresh;  ///< @brief The Hamming distance threshold for decoding.
+    const std::vector<long> codes;  ///< @brief The vector of valid codes for this tag family.
   } AprilTagData;
 
+  /// @brief Tag codes for the 16H5 dictionary.
   const std::vector<long> TAG_16_H5_ = {
       0x231B, 0x2EA5, 0x346A, 0x45B9, 0x79A6, 0x7F6B, 0xB358, 0xE745, 0xFE59, 0x156D,
       0x380B, 0xF0AB, 0x0D84, 0x4736, 0x8C72, 0xAF10, 0x093C, 0x93B4, 0xA503, 0x468F,
       0xE137, 0x5795, 0xDF42, 0x1C1D, 0xE9DC, 0x73AD, 0xAD5F, 0xD530, 0x07CA, 0xAF2E};
+
+  /// @brief Tag codes for the 25H7 dictionary.
   const std::vector<long> TAG_25_H7_ = {
       0x4B770D,  0x11693E6, 0x1A599AB, 0xC3A535,  0x152AAFA, 0xACCD98,  0x1CAD922, 0x2C2FAD,
       0xBB3572,  0x14A3B37, 0x186524B, 0xC99D4C,  0x23BFEA,  0x141CB74, 0x1D0D139, 0x1670AEB,
@@ -73,12 +113,16 @@ class AprilGrid {
       0x1E5A507, 0x120F1E5, 0x114605A, 0x14EFE4C, 0x568134,  0x11B9F92, 0x174D2A7, 0x692B1D,
       0x39E4FE,  0xAAFF3D,  0x96224C,  0x13C9F77, 0x110EE8F, 0xF17BEA,  0x99FB5D,  0x337141,
       0x02B54D,  0x1233A70};
+
+  /// @brief Tag codes for the 25H9 dictionary.
   const std::vector<long> TAG_25_H9_ = {
       0x155CBF1, 0x1E4D1B6, 0x17B0B68, 0x1EAC9CD, 0x12E14CE, 0x3548BB,  0x7757E6,
       0x1065DAB, 0x1BAA2E7, 0xDEA688,  0x81D927,  0x51B241,  0xDBC8AE,  0x1E50E19,
       0x15819D2, 0x16D8282, 0x163E035, 0x9D9B81,  0x173EEC4, 0xAE3A09,  0x5F7C51,
       0x1A137FC, 0xDC9562,  0x1802E45, 0x1C3542C, 0x870FA4,  0x914709,  0x16684F0,
       0xC8F2A5,  0x833EBB,  0x59717F,  0x13CD050, 0xFA0AD1,  0x1B763B0, 0xB991CE};
+
+  /// @brief Tag codes for the 36H11 dictionary.
   const std::vector<long> TAG_36_H11_ = {
       0xD5D628584, 0xD97F18B49, 0xDD280910E, 0xE479E9C98, 0xEBCBCA822, 0xF31DAB3AC, 0x056A5D085,
       0x10652E1D4, 0x22B1DFEAD, 0x265AD0472, 0x34FE91B86, 0x3FF962CD5, 0x43A25329A, 0x474B4385F,
@@ -165,6 +209,7 @@ class AprilGrid {
       0x3A1575DD8, 0x3FEAA3564, 0xEACF78BA7, 0x0872B94F8, 0xDA8DDF9A2, 0x9AA920D2B, 0x1F350ED36,
       0x18A5E861F, 0x2C35B89C3, 0x3347AC48A, 0x7F23E022E, 0x2459068FB, 0xE83BE4B73};
 
+  /// @brief A map of all the pre-defined AprilGrid sets using OpenCV
   const std::unordered_map<cv::aruco::PredefinedDictionaryType, AprilTagData> APRILTAG_DATA_DICT = {
       {cv::aruco::DICT_APRILTAG_16h5, AprilTagData{4, 5, 1, TAG_16_H5_}},
       {cv::aruco::DICT_APRILTAG_25h9, AprilTagData{5, 7, 2, TAG_25_H7_}},
@@ -172,38 +217,83 @@ class AprilGrid {
       {cv::aruco::DICT_APRILTAG_36h11, AprilTagData{6, 11, 3, TAG_36_H11_}}};
 
  private:
+  ///
+  /// @brief Generates a random BGR color.
+  /// @return A cv::Scalar representing a random BGR color.
+  ///
   cv::Scalar random_color();
-  cv::Mat poolImage(const cv::Mat &arr, int block_size, bool use_max);
+
+  ///
+  /// @brief Downsamples an image by pooling.
+  /// @param image_in The input image.
+  /// @param block_size The size of the pooling window.
+  /// @param use_max If true, uses max pooling. Otherwise, uses average pooling.
+  /// @return The downsampled image.
+  ///
+  cv::Mat poolImage(const cv::Mat &image_in, int block_size, bool use_max);
+
+  ///
+  /// @brief Finds candidate corners in the image using thresholding.
+  /// @param image_in The input grayscale image.
+  /// @return A vector of contours, where each contour represents a potential tag corner cluster.
+  ///
   std::vector<std::vector<cv::Point>> apriltagCornerThresh(const cv::Mat &image_in);
+
+  ///
+  /// @brief Applies an adaptive threshold to an image to binarize it.
+  /// @param image The input grayscale image.
+  /// @return The binarized image.
+  ///
   cv::Mat thresholdImage(const cv::Mat &image);
+
+  ///
+  /// @brief Decodes potential AprilTags from a list of corner candidates.
+  /// @param corners A vector of corner sets, where each set contains 4 points of a potential tag.
+  /// @param gray The grayscale input image.
+  /// @return A vector of successfully decoded detections.
+  ///
   std::vector<Detection> decodeCorner(const std::vector<std::vector<cv::Point2f>> &corners,
                                       const cv::Mat &gray);
+
+  ///
+  /// @brief Decodes a single potential tag code and adds it to the list of detections if valid.
+  /// @param detected_code The binary code extracted from the image for a potential tag.
+  /// @param corner The four corner points of the potential tag in the image.
+  /// @param detections The vector of successful detections to which a new detection will be added.
+  ///
   void decode(const cv::Mat &detected_code,
               const std::vector<cv::Point2f> &corner,
               std::vector<Detection> &detections);
 
-  // Input in constructor
-  cv::aruco::PredefinedDictionaryType dict_;
-  unsigned int border_bits_;
-  unsigned int separation_bits_;
-  unsigned int n_rows_;
-  unsigned int n_cols_;
-  double marker_size_;
+  // Member variables from constructor
+  cv::aruco::PredefinedDictionaryType dict_;  ///< @brief The predefined AprilTags dictionary type.
+  unsigned int border_bits_;      ///< @brief The number of black border bits around the tag.
+  unsigned int separation_bits_;  ///< @brief The number of bits separating adjacent tags
+  unsigned int n_rows_;           ///< @brief The number of rows of tags in the grid.
+  unsigned int n_cols_;           ///< @brief The number of columns of tags in the grid.
+  double marker_size_;            ///< @brief The size of the marker in meters
 
-  // Pulled from AprilGrid data dictionary
-  unsigned int tag_bits_;
-  unsigned int min_distance_;
-  unsigned int hamming_thresh_;
-  std::vector<long> codes_;
+  // Member variables pulled from AprilGrid data dictionary
+  unsigned int tag_bits_;        ///< @brief The number of data bits in the tag.
+  unsigned int min_distance_;    ///< @brief The minimum Hamming distance for the tag family.
+  unsigned int hamming_thresh_;  ///< @brief The Hamming distance threshold for decoding.
+  std::vector<long> codes_;      ///< @brief The vector of valid codes for this tag family.
 
-  // Calculated in constructor
+  // Member variables calculated in constructor
+  /// @brief The total number of bits (data + border) on one side of the tag.
   unsigned int marker_bits_;
+  /// @brief The minimum number of pixels for a corner cluster to be considered.
   unsigned int min_cluster_pixels_;
+
+  /// @brief A matrix containing the binary representation of all valid tag codes.
   cv::Mat tag_bit_list_;
+  /// @brief The 3D object points for all corners of the grid.
   std::vector<cv::Point3f> predicted_corners_;
 
-  // Other options
+  // Internal configuration constants
+  /// @brief Minimum difference between white and black pixels for sampling.
   const unsigned int MIN_WHITE_BLACK_DIFF{5};
+  /// @brief Pixel threshold to consider an image "large" for downsampling purposes.
   const double LARGE_IMAGE_THRESHOLD{1000.0};
 };
 
