@@ -7,6 +7,7 @@
 #include <vector>
 
 ///
+/// @class AprilGrid
 /// @brief The AprilGrid class provides methods for detecting AprilGrid patterns and estimating
 /// their pose.
 ///
@@ -16,12 +17,6 @@
 ///
 class AprilGrid {
  public:
-  ///
-  /// @brief Struct containing data for a single detected AprilTag.
-  ///
-  typedef struct Detection {
-  } Detection;
-
   ///
   /// @brief Constructs an AprilGrid detector.
   /// @param dict The predefined dictionary type for the AprilTags.
@@ -276,6 +271,8 @@ class AprilGrid {
   /// @brief Decodes potential AprilTags from a list of corner candidates.
   /// @param image The grayscale input image.
   /// @param candidate_corners A vector of potential tag corner sets.
+  /// @param corners The corners of the decoded tags.
+  /// @param ids The IDs of the decoded tags.
   /// @return A vector of successfully decoded detections.
   ///
   void decodeFromCorners(const cv::Mat &image,
@@ -285,9 +282,10 @@ class AprilGrid {
 
   ///
   /// @brief Decodes a single potential tag code and adds it to the list of detections if valid.
-  /// @param detected_code The binary code extracted from the image for a potential tag.
-  /// @param corner The four corner points of the potential tag in the image.
-  /// @param detections The vector of successful detections to which a new detection will be added.
+  /// @param tag_code The binary code extracted from the image for a potential tag.
+  /// @param tag_corner The four corner points of the potential tag in the image.
+  /// @param corners The corners of the decoded tags.
+  /// @param ids The IDs of the decoded tags.
   ///
   void decodeTag(const cv::Mat &tag_code,
                  const std::vector<cv::Point2f> &tag_corner,
