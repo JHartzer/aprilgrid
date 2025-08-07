@@ -14,6 +14,7 @@
 /// camera calibration and pose estimation. This class handles the detection of individual tags
 /// and uses them collectively to determine the pose of the entire grid.
 /// @todo Add function for showing corner projection errors in board pose estimation.
+/// @todo Enable detection / estimation using occluded grids
 ///
 class AprilGrid {
  public:
@@ -252,8 +253,8 @@ class AprilGrid {
   /// @param gray The grayscale input image.
   /// @return A vector of successfully decoded detections.
   ///
-  std::vector<Detection> decodeCorner(const std::vector<std::vector<cv::Point2f>> &corners,
-                                      const cv::Mat &gray);
+  std::vector<Detection> decodeCorners(const std::vector<std::vector<cv::Point2f>> &corners,
+                                       const cv::Mat &gray);
 
   ///
   /// @brief Decodes a single potential tag code and adds it to the list of detections if valid.
@@ -295,6 +296,11 @@ class AprilGrid {
   const unsigned int MIN_WHITE_BLACK_DIFF{5};
   /// @brief Pixel threshold to consider an image "large" for downsampling purposes.
   const double LARGE_IMAGE_THRESHOLD{1000.0};
+
+  // Named colors
+  const cv::Scalar CYAN{255, 255, 0};
+  const cv::Scalar MAGENTA{255, 0, 255};
+  const cv::Scalar YELLOW{0, 255, 255};
 };
 
 #endif  // APRILGRID__DETECTOR_HPP

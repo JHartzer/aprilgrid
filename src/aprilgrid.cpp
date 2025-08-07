@@ -213,8 +213,8 @@ std::vector<AprilGrid::Detection> AprilGrid::detectTags(const cv::Mat &image_in)
     cv::cornerSubPix(img_for_subpixel, corner, winSize, zeroZone, criteria);
   }
 
-  // Convert back to std::vector<std::vector<cv::Point>> for decodeCorner if it
-  // expects it. Assuming tag_family.decodeCorner expects
+  // Convert back to std::vector<std::vector<cv::Point>> for decodeCorners if it
+  // expects it. Assuming tag_family.decodeCorners expects
   // std::vector<std::vector<cv::Point>> as in tag_family.h
   std::vector<std::vector<cv::Point2f>> final_corners_for_decode;
   for (const auto &corner_float : corners_float) {
@@ -225,7 +225,7 @@ std::vector<AprilGrid::Detection> AprilGrid::detectTags(const cv::Mat &image_in)
     final_corners_for_decode.push_back(int_corner);
   }
 
-  std::vector<Detection> detections = decodeCorner(final_corners_for_decode, image_in);
+  std::vector<Detection> detections = decodeCorners(final_corners_for_decode, image_in);
 
   return detections;
 }
@@ -294,7 +294,6 @@ cv::Mat AprilGrid::thresholdImage(const cv::Mat &image_in) {
   cv::resize(im_max, im_max_resized, cv::Size(w, h), 0, 0, cv::INTER_NEAREST);
 
   cv::Mat im_diff = im_max_resized - im_min_resized;
-  cv::Mat im_thresh;
 
   // Create masks and use element-wise operations.
   // Where mask1 is true, set to 0 else if mask2 is true, set to 255, else 0.
@@ -306,7 +305,7 @@ cv::Mat AprilGrid::thresholdImage(const cv::Mat &image_in) {
   cv::compare(image_in, im_min_plus_half_diff, mask2, cv::CMP_GT);
 
   // Apply the masks
-  im_thresh = cv::Mat::zeros(h, w, CV_8U);
+  cv::Mat im_thresh = cv::Mat::zeros(h, w, CV_8U);
   cv::Mat second_part_result = cv::Mat::zeros(h, w, CV_8U);
   second_part_result.setTo(255, mask2);
 
@@ -385,7 +384,7 @@ void AprilGrid::decode(const cv::Mat &detected_code,
   }
 }
 
-std::vector<AprilGrid::Detection> AprilGrid::decodeCorner(
+std::vector<AprilGrid::Detection> AprilGrid::decodeCorners(
     const std::vector<std::vector<cv::Point2f>> &corners,
     const cv::Mat &gray) {
   std::vector<Detection> detections;
@@ -434,7 +433,7 @@ void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
                                       cv::Vec3d &r_vec,
                                       cv::Vec3d &t_vec,
                                       bool show_debug) {
-  auto aprilgrid_detections = detectTags(image_in);
+  std::vector<AprilGrid::Detection> aprilgrid_detections = detectTags(image_in);
 
   if (aprilgrid_detections.empty()) {
     return;  // Early exit if no detections
@@ -454,8 +453,8 @@ void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
   // Optional debug visualization (moved out of core algorithm)
   /// TODO: Move into separate function
   if (show_debug) {
-    cv::Mat img_color;
-    cv::cvtColor(image_in, img_color, cv::COLOR_GRAY2BGR);
+    cv::Mat img_debug;
+    cv::cvtColor(image_in, img_debug, cv::COLOR_GRAY2BGR);
 
     std::vector<cv::Point2f> projected_corners;
     cv::projectPoints(
@@ -464,47 +463,29 @@ void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
     unsigned int i = 0;
     for (const auto &det : aprilgrid_detections) {
       // Calculate center more efficiently
-      cv::Point2f center(0.0f, 0.0f);
+      cv::Point center(0.0, 0.0);
       for (const auto &corner : det.corners) {
-        center += corner;
+        center.x += corner.x;
+        center.y += corner.y;
       }
-      center *= 0.25f;
+      center.x *= 0.25;
+      center.y *= 0.25;
 
-      cv::putText(img_color,
-                  std::to_string(det.tag_id),
-                  cv::Point(static_cast<int>(center.x), static_cast<int>(center.y)),
-                  cv::FONT_HERSHEY_SIMPLEX,
-                  2,
-                  cv::Scalar(255, 255, 0),
-                  2);
+      cv::putText(
+          img_debug, std::to_string(det.tag_id), center, cv::FONT_HERSHEY_SIMPLEX, 2, CYAN, 3);
 
       for (int k = 0; k < 4; ++k) {
-        cv::Point corner_pt(static_cast<int>(det.corners[k].x), static_cast<int>(det.corners[k].y));
-        cv::putText(img_color,
-                    std::to_string(det.tag_id * 4 + k),
-                    corner_pt,
-                    cv::FONT_HERSHEY_SIMPLEX,
-                    0.8,
-                    cv::Scalar(255, 0, 255),
-                    2);
-        cv::line(img_color,
-                 corner_pt,
-                 cv::Point(static_cast<int>(projected_corners[i].x),
-                           static_cast<int>(projected_corners[i].y)),
-                 cv::Scalar(0, 255, 0),
-                 3);
-        cv::circle(img_color,
-                   cv::Point(static_cast<int>(projected_corners[i].x),
-                             static_cast<int>(projected_corners[i].y)),
-                   3,
-                   cv::Scalar(0, 0, 255),
-                   cv::FILLED);
+        auto corner_id = std::to_string(det.tag_id * 4 + k);
+        cv::putText(
+            img_debug, corner_id, det.corners[k], cv::FONT_HERSHEY_SIMPLEX, 0.8, MAGENTA, 2);
+        cv::line(img_debug, det.corners[k], projected_corners[i], YELLOW, 3);
+        cv::circle(img_debug, projected_corners[i], 3, MAGENTA, cv::FILLED);
         ++i;
       }
     }
 
-    cv::drawFrameAxes(img_color, camera_matrix, dist_coeffs, r_vec, t_vec, 10.0);
-    cv::imshow("Reprojection", img_color);
+    cv::drawFrameAxes(img_debug, camera_matrix, dist_coeffs, r_vec, t_vec, 10.0);
+    cv::imshow("Reprojection", img_debug);
     cv::waitKey(0);
   }
 }
