@@ -35,8 +35,7 @@ AprilGrid::AprilGrid(cv::aruco::PredefinedDictionaryType dict,
 
   const int num_bits = tag_bits_ * tag_bits_;
 
-  // Convert the integer codes into a matrix of bits (CV_8U with values 0 or
-  // 1)
+  // Convert the integer codes into a matrix of bits (CV_8U with values 0 or 1)
   tag_bit_list_ = cv::Mat(codes_.size(), num_bits, CV_8U);
   for (size_t i = 0; i < codes_.size(); ++i) {
     uint64_t code = codes_[i];
@@ -54,9 +53,9 @@ cv::Scalar AprilGrid::random_color() {
   return cv::Scalar(distribution(rng), distribution(rng), distribution(rng));
 }
 
-cv::Mat AprilGrid::poolImage(const cv::Mat &image_in, int block_size, bool use_max) {
-  unsigned int h = image_in.rows;
-  unsigned int w = image_in.cols;
+cv::Mat AprilGrid::poolImage(const cv::Mat &image, int block_size, bool use_max) {
+  unsigned int h = image.rows;
+  unsigned int w = image.cols;
 
   unsigned int h_cropped = h - (h % block_size);
   unsigned int w_cropped = w - (w % block_size);
@@ -64,11 +63,11 @@ cv::Mat AprilGrid::poolImage(const cv::Mat &image_in, int block_size, bool use_m
   unsigned int hs = h_cropped / block_size;
   unsigned int ws = w_cropped / block_size;
 
-  cv::Mat pooled_img(hs, ws, image_in.type());
+  cv::Mat pooled_img(hs, ws, image.type());
 
   // Process blocks for CV_8U (most common case)
-  if (image_in.type() == CV_8U) {
-    const uchar *data = image_in.ptr<uchar>();
+  if (image.type() == CV_8U) {
+    const uchar *data = image.ptr<uchar>();
     uchar *pooled_data = pooled_img.ptr<uchar>();
 
     for (unsigned int i = 0; i < hs; ++i) {
@@ -93,7 +92,7 @@ cv::Mat AprilGrid::poolImage(const cv::Mat &image_in, int block_size, bool use_m
   } else {
     // Fallback for other types
     cv::Rect roi(0, 0, w_cropped, h_cropped);
-    cv::Mat cropped_arr = image_in(roi);
+    cv::Mat cropped_arr = image(roi);
 
     for (unsigned int i = 0; i < hs; ++i) {
       for (unsigned int j = 0; j < ws; ++j) {
@@ -107,9 +106,9 @@ cv::Mat AprilGrid::poolImage(const cv::Mat &image_in, int block_size, bool use_m
           cv::minMaxLoc(current_block, &val, nullptr);
         }
 
-        if (image_in.type() == CV_32F) {
+        if (image.type() == CV_32F) {
           pooled_img.at<float>(i, j) = static_cast<float>(val);
-        } else if (image_in.type() == CV_64F) {
+        } else if (image.type() == CV_64F) {
           pooled_img.at<double>(i, j) = static_cast<double>(val);
         }
       }
@@ -118,13 +117,15 @@ cv::Mat AprilGrid::poolImage(const cv::Mat &image_in, int block_size, bool use_m
   return pooled_img;
 }
 
-std::vector<AprilGrid::Detection> AprilGrid::detectTags(const cv::Mat &image_in) {
+void AprilGrid::detectAprilTags(const cv::Mat &image,
+                                std::vector<std::vector<cv::Point2f>> &corners,
+                                std::vector<int> &ids) {
   // Check if image is valid and convert to grayscale if not already
   cv::Mat gray_img;
-  if (image_in.channels() == 3) {
-    cv::cvtColor(image_in, gray_img, cv::COLOR_BGR2GRAY);
+  if (image.channels() == 3) {
+    cv::cvtColor(image, gray_img, cv::COLOR_BGR2GRAY);
   } else {
-    gray_img = image_in;
+    gray_img = image;
   }
 
   // Ensure image is of an appropriate type for operations (e.g., CV_8U)
@@ -179,17 +180,14 @@ std::vector<AprilGrid::Detection> AprilGrid::detectTags(const cv::Mat &image_in)
   }
 
   // refine on original image
-  // Convert gray_img to float if needed for cornerSubPix, but it usually
-  // handles CV_8U
-  cv::Mat img_for_subpixel = image_in;  // Use original image for final refinement
+  // Convert gray_img to float if needed for cornerSubPix, but it usually handles CV_8U
+  cv::Mat img_for_subpixel = image;  // Use original image for final refinement
 
   for (auto &corner : corners_float) {
     cv::cornerSubPix(img_for_subpixel, corner, winSize, zeroZone, criteria);
   }
 
-  // Convert back to std::vector<std::vector<cv::Point>> for decodeCorners if it
-  // expects it. Assuming tag_family.decodeCorners expects
-  // std::vector<std::vector<cv::Point>> as in tag_family.h
+  // Convert back to std::vector<std::vector<cv::Point>> for decodeFromCorners if it expects it
   std::vector<std::vector<cv::Point2f>> final_corners_for_decode;
   for (const auto &corner_float : corners_float) {
     std::vector<cv::Point2f> int_corner;
@@ -199,14 +197,12 @@ std::vector<AprilGrid::Detection> AprilGrid::detectTags(const cv::Mat &image_in)
     final_corners_for_decode.push_back(int_corner);
   }
 
-  std::vector<Detection> detections = decodeCorners(final_corners_for_decode, image_in);
-
-  return detections;
+  decodeFromCorners(image, final_corners_for_decode, corners, ids);
 }
 
-std::vector<std::vector<cv::Point>> AprilGrid::apriltagCornerThresh(const cv::Mat &image_in) {
+std::vector<std::vector<cv::Point>> AprilGrid::apriltagCornerThresh(const cv::Mat &image) {
   // step 1. threshold the image, creating the edge image.
-  cv::Mat im_copy = image_in.clone();
+  cv::Mat im_copy = image.clone();
   cv::Mat im_thresh = thresholdImage(im_copy);
 
   std::vector<std::vector<cv::Point>> contours;
@@ -250,13 +246,13 @@ std::vector<std::vector<cv::Point>> AprilGrid::apriltagCornerThresh(const cv::Ma
   return corners;
 }
 
-cv::Mat AprilGrid::thresholdImage(const cv::Mat &image_in) {
-  int h = image_in.rows;
-  int w = image_in.cols;
+cv::Mat AprilGrid::thresholdImage(const cv::Mat &image) {
+  int h = image.rows;
+  int w = image.cols;
 
   int tile_size = 4;
-  cv::Mat im_max = poolImage(image_in, tile_size, true);
-  cv::Mat im_min = poolImage(image_in, tile_size, false);
+  cv::Mat im_max = poolImage(image, tile_size, true);
+  cv::Mat im_min = poolImage(image, tile_size, false);
 
   cv::Mat kernel0 = cv::Mat::ones(3, 3, CV_8U);
   cv::dilate(im_max, im_max, kernel0);
@@ -276,7 +272,7 @@ cv::Mat AprilGrid::thresholdImage(const cv::Mat &image_in) {
 
   cv::Mat mask2;
   cv::Mat im_min_plus_half_diff = im_min_resized + (im_diff / 2);
-  cv::compare(image_in, im_min_plus_half_diff, mask2, cv::CMP_GT);
+  cv::compare(image, im_min_plus_half_diff, mask2, cv::CMP_GT);
 
   // Apply the masks
   cv::Mat im_thresh = cv::Mat::zeros(h, w, CV_8U);
@@ -296,10 +292,11 @@ cv::Mat AprilGrid::thresholdImage(const cv::Mat &image_in) {
   return im_thresh;
 }
 
-void AprilGrid::decode(const cv::Mat &detected_code,
-                       const std::vector<cv::Point2f> &corner,
-                       std::vector<Detection> &detections) {
-  const int code_size = detected_code.rows * detected_code.cols;
+void AprilGrid::decodeTag(const cv::Mat &tag_code,
+                          const std::vector<cv::Point2f> &tag_corner,
+                          std::vector<std::vector<cv::Point2f>> &corners,
+                          std::vector<int> &ids) {
+  const int code_size = tag_code.rows * tag_code.cols;
 
   // Pre-allocate rotation buffers to avoid repeated memory allocation
   static thread_local std::vector<uchar> current_bits(64);  // Max expected size
@@ -309,11 +306,11 @@ void AprilGrid::decode(const cv::Mat &detected_code,
   rotated_bits.resize(code_size);
 
   // Copy initial code to buffer
-  const uchar *code_data = detected_code.ptr<uchar>();
+  const uchar *code_data = tag_code.ptr<uchar>();
   std::memcpy(current_bits.data(), code_data, code_size);
 
-  const int rows = detected_code.rows;
-  const int cols = detected_code.cols;
+  const int rows = tag_code.rows;
+  const int cols = tag_code.cols;
 
   for (int r = 0; r < 4; ++r) {
     int best_score_idx = -1;
@@ -338,11 +335,11 @@ void AprilGrid::decode(const cv::Mat &detected_code,
     }
 
     if (best_score_idx != -1) {
-      std::vector<cv::Point2f> oriented_corner = corner;
+      std::vector<cv::Point2f> oriented_corner = tag_corner;
       std::rotate(oriented_corner.begin(), oriented_corner.begin() + r, oriented_corner.end());
       std::reverse(oriented_corner.begin(), oriented_corner.end());
-      Detection detection{best_score_idx, oriented_corner};
-      detections.push_back(detection);
+      corners.push_back(oriented_corner);
+      ids.push_back(best_score_idx);
       return;
     }
 
@@ -358,32 +355,32 @@ void AprilGrid::decode(const cv::Mat &detected_code,
   }
 }
 
-std::vector<AprilGrid::Detection> AprilGrid::decodeCorners(
-    const std::vector<std::vector<cv::Point2f>> &corners,
-    const cv::Mat &gray) {
-  std::vector<Detection> detections;
-  if (gray.empty() || gray.channels() != 1) {
+void AprilGrid::decodeFromCorners(const cv::Mat &image,
+                                  const std::vector<std::vector<cv::Point2f>> &candidate_corners,
+                                  std::vector<std::vector<cv::Point2f>> &corners,
+                                  std::vector<int> &ids) {
+  if (image.empty() || image.channels() != 1) {
     std::cerr << "Error: Input image must be a single-channel grayscale image." << std::endl;
-    return detections;
+    return;
   }
 
-  for (const auto &corner : corners) {
-    if (corner.size() != 4) continue;
+  for (const auto &tag_corners : candidate_corners) {
+    if (tag_corners.size() != 4) continue;
 
     // Calculate total tag dimensions and define canonical corners
     float edge_pos = static_cast<float>(marker_bits_) - 0.5f;
-    std::vector<cv::Point2f> tag_corners = {cv::Point2f(-0.5f, -0.5f),
+    std::vector<cv::Point2f> corners_est = {cv::Point2f(-0.5f, -0.5f),
                                             cv::Point2f(edge_pos, -0.5f),
                                             cv::Point2f(edge_pos, edge_pos),
                                             cv::Point2f(-0.5f, edge_pos)};
 
-    // Find homography to warp the corner to a canonical square tag image
-    cv::Mat H = cv::findHomography(corner, tag_corners);
+    // Find homography to warp the tag_corners to a canonical square tag image
+    cv::Mat H = cv::findHomography(tag_corners, corners_est);
     if (H.empty()) continue;
 
     // Warp the perspective to get a flat view of the tag
     cv::Mat tag_img;
-    cv::warpPerspective(gray, tag_img, H, cv::Size(marker_bits_, marker_bits_));
+    cv::warpPerspective(image, tag_img, H, cv::Size(marker_bits_, marker_bits_));
 
     // Extract the inner data bits by creating a Region of Interest (ROI)
     cv::Rect data_roi(border_bits_, border_bits_, tag_bits_, tag_bits_);
@@ -391,34 +388,28 @@ std::vector<AprilGrid::Detection> AprilGrid::decodeCorners(
 
     // Threshold the data region to get a binary code (0s and 1s)
     cv::Scalar avg_brightness = cv::mean(tag_img);
-    cv::Mat detected_code;
-    cv::threshold(data_region, detected_code, avg_brightness[0] + 20, 1, cv::THRESH_BINARY);
-    detected_code.convertTo(detected_code, CV_8U);
+    cv::Mat tag_code;
+    cv::threshold(data_region, tag_code, avg_brightness[0] + 20, 1, cv::THRESH_BINARY);
+    tag_code.convertTo(tag_code, CV_8U);
 
     // Attempt to decode the extracted binary code
-    decode(detected_code, corner, detections);
+    decodeTag(tag_code, tag_corners, corners, ids);
   }
-  return detections;
 }
 
-void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
-                                      const cv::Mat &camera_matrix,
-                                      const cv::Mat &dist_coeffs,
-                                      cv::Vec3d &r_vec,
-                                      cv::Vec3d &t_vec,
-                                      bool show_debug) {
-  std::vector<AprilGrid::Detection> aprilgrid_detections = detectTags(image_in);
-
-  if (aprilgrid_detections.empty()) {
+void AprilGrid::matchImagePoints(std::vector<std::vector<cv::Point2f>> &corners,
+                                 std::vector<int> &ids,
+                                 std::vector<cv::Point3f> &obj_points,
+                                 std::vector<cv::Point2f> &img_points) {
+  if (ids.empty()) {
     return;  // Early exit if no detections
   }
 
   // Flatten detected corners more efficiently
-  std::vector<cv::Point2f> flat_corners;
-  flat_corners.reserve(aprilgrid_detections.size() * 4);
+  img_points.reserve(ids.size() * 4);
 
-  for (const auto &detection : aprilgrid_detections) {
-    flat_corners.insert(flat_corners.end(), detection.corners.begin(), detection.corners.end());
+  for (const auto &tag_corners : corners) {
+    img_points.insert(img_points.end(), tag_corners.begin(), tag_corners.end());
   }
 
   // Pre-calculate constants once
@@ -427,10 +418,9 @@ void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
   const float grid_width = (marker_bits_ * n_cols_ + (n_cols_ - 1) * separation_bits_) * bit_size;
 
   // Generate predicted 3D points
-  std::vector<cv::Point3f> predicted_corners;
-  for (const auto &detection : aprilgrid_detections) {
-    int row = detection.tag_id / n_cols_;
-    int col = detection.tag_id % n_cols_;
+  for (const auto &tag_id : ids) {
+    int row = tag_id / n_cols_;
+    int col = tag_id % n_cols_;
     const float off_y = row * grid_size;
     const float off_x = col * grid_size;
     const float x1 = grid_width - (off_x + marker_size_);
@@ -438,51 +428,47 @@ void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
     const float y1 = off_y;
     const float y2 = off_y + marker_size_;
 
-    predicted_corners.emplace_back(x2, y1, 0.0f);
-    predicted_corners.emplace_back(x1, y1, 0.0f);
-    predicted_corners.emplace_back(x1, y2, 0.0f);
-    predicted_corners.emplace_back(x2, y2, 0.0f);
+    obj_points.emplace_back(x2, y1, 0.0f);
+    obj_points.emplace_back(x1, y1, 0.0f);
+    obj_points.emplace_back(x1, y2, 0.0f);
+    obj_points.emplace_back(x2, y2, 0.0f);
   }
+}
 
-  // Core pose estimation (the actual important computation)
-  cv::solvePnP(predicted_corners, flat_corners, camera_matrix, dist_coeffs, r_vec, t_vec);
+void AprilGrid::drawDetectedTags(cv::Mat &image,
+                                 std::vector<int> &ids,
+                                 std::vector<cv::Point2f> &img_points) {
+  unsigned int i = 0;
+  for (unsigned int i = 0; i < ids.size(); ++i) {
+    cv::Point center(0.0, 0.0);
 
-  // Optional debug visualization (moved out of core algorithm)
-  /// TODO: Move into separate function
-  if (show_debug) {
-    cv::Mat img_debug;
-    cv::cvtColor(image_in, img_debug, cv::COLOR_GRAY2BGR);
-
-    std::vector<cv::Point2f> projected_corners;
-    cv::projectPoints(
-        predicted_corners, r_vec, t_vec, camera_matrix, dist_coeffs, projected_corners);
-
-    unsigned int i = 0;
-    for (const auto &det : aprilgrid_detections) {
-      // Calculate center more efficiently
-      cv::Point center(0.0, 0.0);
-      for (const auto &corner : det.corners) {
-        center.x += corner.x;
-        center.y += corner.y;
-      }
-      center.x *= 0.25;
-      center.y *= 0.25;
-
-      cv::putText(
-          img_debug, std::to_string(det.tag_id), center, cv::FONT_HERSHEY_SIMPLEX, 1.0, CYAN, 2);
-
-      for (int k = 0; k < 4; ++k) {
-        auto corner_id = std::to_string(det.tag_id * 4 + k);
-        cv::putText(
-            img_debug, corner_id, det.corners[k], cv::FONT_HERSHEY_SIMPLEX, 0.5, MAGENTA, 1);
-        cv::line(img_debug, det.corners[k], projected_corners[i], YELLOW, 2);
-        cv::circle(img_debug, projected_corners[i], 2, MAGENTA, cv::FILLED);
-        ++i;
-      }
+    for (int j = 0; j < 4; ++j) {
+      int k = 4 * i + j;
+      auto corner_id = std::to_string(4 * ids[i] + j);
+      cv::putText(image, corner_id, img_points[k], cv::FONT_HERSHEY_SIMPLEX, 0.5, MAGENTA, 1);
+      cv::circle(image, img_points[k], 2, MAGENTA, cv::FILLED);
+      center.x += img_points[k].x;
+      center.y += img_points[k].y;
     }
 
-    cv::drawFrameAxes(img_debug, camera_matrix, dist_coeffs, r_vec, t_vec, 5.0);
-    cv::imshow("Reprojection", img_debug);
-    cv::waitKey(0);
+    center.x *= 0.25;
+    center.y *= 0.25;
+
+    cv::putText(image, std::to_string(ids[i]), center, cv::FONT_HERSHEY_SIMPLEX, 1.0, CYAN, 2);
+  }
+}
+
+void AprilGrid::drawReprojectionErrors(cv::Mat &image,
+                                       std::vector<int> &ids,
+                                       std::vector<cv::Point3f> &obj_points,
+                                       std::vector<cv::Point2f> &img_points,
+                                       cv::Vec3d r_vec,
+                                       cv::Vec3d t_vec,
+                                       cv::Mat camera_matrix,
+                                       cv::Mat dist_coeffs) {
+  std::vector<cv::Point2f> projected_corners;
+  cv::projectPoints(obj_points, r_vec, t_vec, camera_matrix, dist_coeffs, projected_corners);
+  for (unsigned int i = 0; i < ids.size(); ++i) {
+    cv::line(image, img_points[i], projected_corners[i], YELLOW, 2);
   }
 }

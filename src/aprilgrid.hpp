@@ -13,7 +13,6 @@
 /// An AprilGrid is a specific arrangement of AprilTags in a grid, which can be used for robust
 /// camera calibration and pose estimation. This class handles the detection of individual tags
 /// and uses them collectively to determine the pose of the entire grid.
-/// @todo Add function for showing corner projection errors in board pose estimation.
 ///
 class AprilGrid {
  public:
@@ -21,8 +20,6 @@ class AprilGrid {
   /// @brief Struct containing data for a single detected AprilTag.
   ///
   typedef struct Detection {
-    int tag_id;                        ///< @brief The decoded ID of the tag.
-    std::vector<cv::Point2f> corners;  ///< @brief The 4 corners of the tag in the image.
   } Detection;
 
   ///
@@ -43,26 +40,55 @@ class AprilGrid {
 
   ///
   /// @brief Detects AprilTags in an image.
-  /// @param image_in The input image (grayscale or BGR).
-  /// @return A vector of detected AprilTags.
+  /// @param image The input image (grayscale or BGR).
+  /// @param corners The corners of the decoded tags.
+  /// @param ids The IDs of the decoded tags.
   ///
-  std::vector<Detection> detectTags(const cv::Mat &image_in);
+  void detectAprilTags(const cv::Mat &image,
+                       std::vector<std::vector<cv::Point2f>> &corners,
+                       std::vector<int> &ids);
 
   ///
-  /// @brief Estimates the pose of the AprilGrid from an image.
-  /// @param image_in The input image (grayscale or BGR).
-  /// @param camera_matrix The camera intrinsic matrix.
-  /// @param dist_coeffs The camera distortion coefficients.
-  /// @param r_vec Output rotation vector.
-  /// @param t_vec Output translation vector.
-  /// @param show_debug If true, displays a window with debug visualization.
+  /// @brief Detects AprilTags in an image.
+  /// @param corners The corners of the decoded tags.
+  /// @param ids The IDs of the decoded tags.
+  /// @param obj_points Vector of marker points in the board coordinate space.
+  /// @param img_points Vector of marker points in the image coordinate space.
   ///
-  void estimatePoseAprilGrid(const cv::Mat &image_in,
-                             const cv::Mat &camera_matrix,
-                             const cv::Mat &dist_coeffs,
-                             cv::Vec3d &r_vec,
-                             cv::Vec3d &t_vec,
-                             bool show_debug = false);
+  void matchImagePoints(std::vector<std::vector<cv::Point2f>> &corners,
+                        std::vector<int> &ids,
+                        std::vector<cv::Point3f> &obj_points,
+                        std::vector<cv::Point2f> &img_points);
+
+  ///
+  /// @brief Detects AprilTags in an image.
+  /// @param image The input image (grayscale or BGR).
+  /// @param ids The IDs of the decoded tags.
+  /// @param img_points Vector of marker points in the image coordinate space.
+  ///
+  void drawDetectedTags(cv::Mat &image,
+                        std::vector<int> &ids,
+                        std::vector<cv::Point2f> &img_points);
+
+  ///
+  /// @brief Detects AprilTags in an image.
+  /// @param image The input image (grayscale or BGR).
+  /// @param ids The IDs of the decoded tags.
+  /// @param obj_points Vector of marker points in the board coordinate space.
+  /// @param img_points Vector of marker points in the image coordinate space.
+  /// @param r_vec Output vector corresponding to the rotation vector of the board
+  /// @param t_vec Output vector corresponding to the translation vector of the board
+  /// @param camera_matrix Matrix of camera coefficients
+  /// @param dist_coeffs Vector of distortion coefficients
+  ///
+  void drawReprojectionErrors(cv::Mat &image,
+                              std::vector<int> &ids,
+                              std::vector<cv::Point3f> &obj_points,
+                              std::vector<cv::Point2f> &img_points,
+                              cv::Vec3d r_vec,
+                              cv::Vec3d t_vec,
+                              cv::Mat camera_matrix,
+                              cv::Mat dist_coeffs);
 
   ///
   /// @brief Struct collecting data for a specific AprilTag dictionary.
@@ -225,19 +251,19 @@ class AprilGrid {
 
   ///
   /// @brief Downsamples an image by pooling.
-  /// @param image_in The input image.
+  /// @param image The input image.
   /// @param block_size The size of the pooling window.
   /// @param use_max If true, uses max pooling. Otherwise, uses average pooling.
   /// @return The downsampled image.
   ///
-  cv::Mat poolImage(const cv::Mat &image_in, int block_size, bool use_max);
+  cv::Mat poolImage(const cv::Mat &image, int block_size, bool use_max);
 
   ///
   /// @brief Finds candidate corners in the image using thresholding.
-  /// @param image_in The input grayscale image.
+  /// @param image The input grayscale image.
   /// @return A vector of contours, where each contour represents a potential tag corner cluster.
   ///
-  std::vector<std::vector<cv::Point>> apriltagCornerThresh(const cv::Mat &image_in);
+  std::vector<std::vector<cv::Point>> apriltagCornerThresh(const cv::Mat &image);
 
   ///
   /// @brief Applies an adaptive threshold to an image to binarize it.
@@ -248,12 +274,14 @@ class AprilGrid {
 
   ///
   /// @brief Decodes potential AprilTags from a list of corner candidates.
-  /// @param corners A vector of corner sets, where each set contains 4 points of a potential tag.
-  /// @param gray The grayscale input image.
+  /// @param image The grayscale input image.
+  /// @param candidate_corners A vector of potential tag corner sets.
   /// @return A vector of successfully decoded detections.
   ///
-  std::vector<Detection> decodeCorners(const std::vector<std::vector<cv::Point2f>> &corners,
-                                       const cv::Mat &gray);
+  void decodeFromCorners(const cv::Mat &image,
+                         const std::vector<std::vector<cv::Point2f>> &candidate_corners,
+                         std::vector<std::vector<cv::Point2f>> &corners,
+                         std::vector<int> &ids);
 
   ///
   /// @brief Decodes a single potential tag code and adds it to the list of detections if valid.
@@ -261,9 +289,10 @@ class AprilGrid {
   /// @param corner The four corner points of the potential tag in the image.
   /// @param detections The vector of successful detections to which a new detection will be added.
   ///
-  void decode(const cv::Mat &detected_code,
-              const std::vector<cv::Point2f> &corner,
-              std::vector<Detection> &detections);
+  void decodeTag(const cv::Mat &tag_code,
+                 const std::vector<cv::Point2f> &tag_corner,
+                 std::vector<std::vector<cv::Point2f>> &corners,
+                 std::vector<int> &ids);
 
   // Member variables from constructor
   cv::aruco::PredefinedDictionaryType dict_;  ///< @brief The predefined AprilTags dictionary type.
