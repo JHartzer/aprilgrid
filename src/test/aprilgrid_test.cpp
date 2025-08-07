@@ -22,7 +22,7 @@ class AprilgridDetectorTest : public testing::Test {
 
 TEST_F(AprilgridDetectorTest, full) {
   auto detector = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1);
-  auto image_path = fs::current_path() / "src/test/assets/aprilgrid_6x6.png";
+  auto image_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6.png";
   auto image = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
 
   std::vector<std::vector<cv::Point2f>> corners;
@@ -43,13 +43,13 @@ TEST_F(AprilgridDetectorTest, full) {
       image_out, ids, obj_points, img_points, r_vec, t_vec, camera_matrix_, dist_coeffs_);
   cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 5.0);
 
-  auto out_path = fs::current_path() / "src/test/assets/aprilgrid_6x6_out.png";
+  auto out_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6_out.png";
   cv::imwrite(out_path, image_out);
 }
 
 TEST_F(AprilgridDetectorTest, occluded) {
   auto detector = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1);
-  auto image_path = fs::current_path() / "src/test/assets/aprilgrid_6x6_occluded.png";
+  auto image_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6_occluded.png";
   auto image = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
 
   std::vector<std::vector<cv::Point2f>> corners;
@@ -70,6 +70,6 @@ TEST_F(AprilgridDetectorTest, occluded) {
       image_out, ids, obj_points, img_points, r_vec, t_vec, camera_matrix_, dist_coeffs_);
   cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 5.0);
 
-  auto out_path = fs::current_path() / "src/test/assets/aprilgrid_6x6_occluded_out.png";
+  auto out_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6_occluded_out.png";
   cv::imwrite(out_path, image_out);
 }

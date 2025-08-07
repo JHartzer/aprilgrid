@@ -14,7 +14,7 @@ cmake --build .
 
 ## Test
 ```
-./build/aprilgrid-cpp-test
+./aprilgrid-cpp-test
 ```
 
 ## Using this Library
