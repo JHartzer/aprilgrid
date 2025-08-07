@@ -22,17 +22,18 @@ class AprilgridDetectorTest : public testing::Test {
 
 TEST_F(AprilgridDetectorTest, full) {
   auto detector = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1);
-  auto img = cv::imread(fs::current_path() / "../src/test/aprilgrid_6x6.png", cv::IMREAD_GRAYSCALE);
+  auto image_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6.png";
+  auto img = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
 
   cv::Vec3d r_vec, t_vec;
-  detector.estimatePoseAprilGrid(img, camera_matrix_, dist_coeffs_, r_vec, t_vec, true);
+  detector.estimatePoseAprilGrid(img, camera_matrix_, dist_coeffs_, r_vec, t_vec, false);
 }
 
 TEST_F(AprilgridDetectorTest, occluded) {
   auto detector = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1);
-  auto img = cv::imread(fs::current_path() / "../src/test/aprilgrid_6x6_occluded.png",
-                        cv::IMREAD_GRAYSCALE);
+  auto image_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6_occluded.png";
+  auto img = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
 
   cv::Vec3d r_vec, t_vec;
-  detector.estimatePoseAprilGrid(img, camera_matrix_, dist_coeffs_, r_vec, t_vec, true);
+  detector.estimatePoseAprilGrid(img, camera_matrix_, dist_coeffs_, r_vec, t_vec, false);
 }

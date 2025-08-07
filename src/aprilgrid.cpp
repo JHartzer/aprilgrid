@@ -469,14 +469,14 @@ void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
       center.y *= 0.25;
 
       cv::putText(
-          img_debug, std::to_string(det.tag_id), center, cv::FONT_HERSHEY_SIMPLEX, 2, CYAN, 3);
+          img_debug, std::to_string(det.tag_id), center, cv::FONT_HERSHEY_SIMPLEX, 1.0, CYAN, 2);
 
       for (int k = 0; k < 4; ++k) {
         auto corner_id = std::to_string(det.tag_id * 4 + k);
         cv::putText(
-            img_debug, corner_id, det.corners[k], cv::FONT_HERSHEY_SIMPLEX, 0.8, MAGENTA, 2);
-        cv::line(img_debug, det.corners[k], projected_corners[i], YELLOW, 3);
-        cv::circle(img_debug, projected_corners[i], 3, MAGENTA, cv::FILLED);
+            img_debug, corner_id, det.corners[k], cv::FONT_HERSHEY_SIMPLEX, 0.5, MAGENTA, 1);
+        cv::line(img_debug, det.corners[k], projected_corners[i], YELLOW, 2);
+        cv::circle(img_debug, projected_corners[i], 2, MAGENTA, cv::FILLED);
         ++i;
       }
     }
