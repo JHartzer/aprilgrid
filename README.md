@@ -48,3 +48,13 @@ detector.drawDetectedTags(image_out, ids, img_points);
 detector.drawReprojectionErrors(image_out, ids, obj_points, img_points, r_vec, t_vec, camera_matrix_, dist_coeffs_);
 cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 5.0);
 ```
+
+
+## Examples
+A full board detection:
+
+![](src/test/assets/aprilgrid_6x6_out.png)
+
+Or with occlusions:
+
+![](src/test/assets/aprilgrid_6x6_occluded_out.png)
