@@ -44,32 +44,6 @@ AprilGrid::AprilGrid(cv::aruco::PredefinedDictionaryType dict,
       tag_bit_list_.at<uchar>(i, j) = (code >> (num_bits - 1 - j)) & 1;
     }
   }
-
-  // Pre-calculate constants once
-  const float bit_size = float(marker_size_) / float(marker_bits_);
-  const float grid_size = (marker_bits_ + separation_bits_) * bit_size;
-  const float grid_width = (marker_bits_ * n_cols_ + (n_cols_ - 1) * separation_bits_) * bit_size;
-
-  // Pre-allocate vectors with known size
-  const size_t total_corners = n_rows_ * n_cols_ * 4;
-  predicted_corners_.reserve(total_corners);
-
-  // Generate predicted 3D points
-  for (unsigned int row = 0; row < n_rows_; row++) {
-    const float off_y = row * grid_size;
-    for (unsigned int col = 0; col < n_cols_; col++) {
-      const float off_x = col * grid_size;
-      const float x1 = grid_width - (off_x + marker_size_);
-      const float x2 = grid_width - off_x;
-      const float y1 = off_y;
-      const float y2 = off_y + marker_size_;
-
-      predicted_corners_.emplace_back(x1, y1, 0.0f);
-      predicted_corners_.emplace_back(x2, y1, 0.0f);
-      predicted_corners_.emplace_back(x2, y2, 0.0f);
-      predicted_corners_.emplace_back(x1, y2, 0.0f);
-    }
-  }
 };
 
 // Helper function: random_color
@@ -447,8 +421,31 @@ void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
     flat_corners.insert(flat_corners.end(), detection.corners.begin(), detection.corners.end());
   }
 
+  // Pre-calculate constants once
+  const float bit_size = float(marker_size_) / float(marker_bits_);
+  const float grid_size = (marker_bits_ + separation_bits_) * bit_size;
+  const float grid_width = (marker_bits_ * n_cols_ + (n_cols_ - 1) * separation_bits_) * bit_size;
+
+  // Generate predicted 3D points
+  std::vector<cv::Point3f> predicted_corners;
+  for (const auto &detection : aprilgrid_detections) {
+    int row = detection.tag_id / n_cols_;
+    int col = detection.tag_id % n_cols_;
+    const float off_y = row * grid_size;
+    const float off_x = col * grid_size;
+    const float x1 = grid_width - (off_x + marker_size_);
+    const float x2 = grid_width - off_x;
+    const float y1 = off_y;
+    const float y2 = off_y + marker_size_;
+
+    predicted_corners.emplace_back(x2, y1, 0.0f);
+    predicted_corners.emplace_back(x1, y1, 0.0f);
+    predicted_corners.emplace_back(x1, y2, 0.0f);
+    predicted_corners.emplace_back(x2, y2, 0.0f);
+  }
+
   // Core pose estimation (the actual important computation)
-  cv::solvePnP(predicted_corners_, flat_corners, camera_matrix, dist_coeffs, r_vec, t_vec);
+  cv::solvePnP(predicted_corners, flat_corners, camera_matrix, dist_coeffs, r_vec, t_vec);
 
   // Optional debug visualization (moved out of core algorithm)
   /// TODO: Move into separate function
@@ -458,7 +455,7 @@ void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
 
     std::vector<cv::Point2f> projected_corners;
     cv::projectPoints(
-        predicted_corners_, r_vec, t_vec, camera_matrix, dist_coeffs, projected_corners);
+        predicted_corners, r_vec, t_vec, camera_matrix, dist_coeffs, projected_corners);
 
     unsigned int i = 0;
     for (const auto &det : aprilgrid_detections) {
@@ -484,7 +481,7 @@ void AprilGrid::estimatePoseAprilGrid(const cv::Mat &image_in,
       }
     }
 
-    cv::drawFrameAxes(img_debug, camera_matrix, dist_coeffs, r_vec, t_vec, 10.0);
+    cv::drawFrameAxes(img_debug, camera_matrix, dist_coeffs, r_vec, t_vec, 5.0);
     cv::imshow("Reprojection", img_debug);
     cv::waitKey(0);
   }

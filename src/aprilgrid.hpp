@@ -14,7 +14,6 @@
 /// camera calibration and pose estimation. This class handles the detection of individual tags
 /// and uses them collectively to determine the pose of the entire grid.
 /// @todo Add function for showing corner projection errors in board pose estimation.
-/// @todo Enable detection / estimation using occluded grids
 ///
 class AprilGrid {
  public:
@@ -288,8 +287,6 @@ class AprilGrid {
 
   /// @brief A matrix containing the binary representation of all valid tag codes.
   cv::Mat tag_bit_list_;
-  /// @brief The 3D object points for all corners of the grid.
-  std::vector<cv::Point3f> predicted_corners_;
 
   // Internal configuration constants
   /// @brief Minimum difference between white and black pixels for sampling.

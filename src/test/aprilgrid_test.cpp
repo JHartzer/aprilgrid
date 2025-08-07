@@ -14,21 +14,25 @@
 
 namespace fs = std::filesystem;
 
-TEST(test_detector, aprilgrid_b2) {
+class AprilgridDetectorTest : public testing::Test {
+ protected:
+  cv::Mat camera_matrix_ = (cv::Mat_<float>(3, 3) << 500, 0, 512, 0, 500, 512, 0, 0, 0);
+  cv::Mat dist_coeffs_{0, 0, 0, 0};
+};
+
+TEST_F(AprilgridDetectorTest, full) {
   auto detector = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1);
   auto img = cv::imread(fs::current_path() / "../src/test/aprilgrid_6x6.png", cv::IMREAD_GRAYSCALE);
 
-  cv::Vec3d r_vec;
-  cv::Vec3d t_vec;
-  cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64F);
-  camera_matrix.at<double>(0, 0) = 500.0;
-  camera_matrix.at<double>(1, 1) = 500.0;
-  camera_matrix.at<double>(0, 2) = 512.0;
-  camera_matrix.at<double>(1, 2) = 512.0;
-  cv::Mat dist_coeffs{0, 0, 0, 0};
+  cv::Vec3d r_vec, t_vec;
+  detector.estimatePoseAprilGrid(img, camera_matrix_, dist_coeffs_, r_vec, t_vec, true);
+}
 
-  detector.estimatePoseAprilGrid(img, camera_matrix, dist_coeffs, r_vec, t_vec, false);
+TEST_F(AprilgridDetectorTest, occluded) {
+  auto detector = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1);
+  auto img = cv::imread(fs::current_path() / "../src/test/aprilgrid_6x6_occluded.png",
+                        cv::IMREAD_GRAYSCALE);
 
-  std::cout << r_vec << std::endl;
-  std::cout << t_vec << std::endl;
+  cv::Vec3d r_vec, t_vec;
+  detector.estimatePoseAprilGrid(img, camera_matrix_, dist_coeffs_, r_vec, t_vec, true);
 }
