@@ -12,13 +12,15 @@ AprilGrid::AprilGrid(cv::aruco::PredefinedDictionaryType dict,
                      unsigned int separation_bits,
                      unsigned int n_rows,
                      unsigned int n_cols,
-                     double marker_size)
+                     double marker_size,
+                     unsigned int starting_id)
     : dict_(dict),
       border_bits_(border_bit),
       separation_bits_(separation_bits),
       n_rows_(n_rows),
       n_cols_(n_cols),
-      marker_size_(marker_size) {
+      marker_size_(marker_size),
+      starting_id_(starting_id) {
   auto apriltag_data = APRILTAG_DATA_DICT.find(dict);
   if (apriltag_data == APRILTAG_DATA_DICT.end()) {
     throw std::invalid_argument("AprilGrid: Invalid dictionary type!");

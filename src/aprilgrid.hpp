@@ -31,7 +31,8 @@ class AprilGrid {
             unsigned int separation_bits,
             unsigned int n_rows,
             unsigned int n_cols,
-            double marker_size);
+            double marker_size,
+            unsigned int starting_id);
 
   ///
   /// @brief Detects AprilTags in an image.
@@ -299,6 +300,7 @@ class AprilGrid {
   unsigned int n_rows_;           ///< @brief The number of rows of tags in the grid.
   unsigned int n_cols_;           ///< @brief The number of columns of tags in the grid.
   double marker_size_;            ///< @brief The size of the marker in meters
+  unsigned int starting_id_;      ///< @brief The starting ID of the April grid
 
   // Member variables pulled from AprilGrid data dictionary
   unsigned int tag_bits_;        ///< @brief The number of data bits in the tag.
