@@ -1,3 +1,18 @@
+// Copyright 2025 Jacob Hartzer
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 #include "aprilgrid.hpp"
 
 #include <algorithm>
@@ -421,8 +436,8 @@ void AprilGrid::matchImagePoints(std::vector<std::vector<cv::Point2f>> &corners,
 
   // Generate predicted 3D points
   for (const auto &tag_id : ids) {
-    int row = tag_id / n_cols_;
-    int col = tag_id % n_cols_;
+    int row = (tag_id - starting_id_) / n_cols_;
+    int col = (tag_id - starting_id_) % n_cols_;
     const float off_y = row * grid_size;
     const float off_x = col * grid_size;
     const float x1 = grid_width - (off_x + marker_size_);
