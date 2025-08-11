@@ -48,6 +48,8 @@ install(
     DESTINATION "${APRILGRID_INSTALL_PREFIX}"
 )
 
+install(FILES src/aprilgrid.hpp DESTINATION include)
+
 add_executable(aprilgrid-test src/test/aprilgrid_test.cpp)
 target_link_libraries(aprilgrid-test aprilgrid ${OpenCV_LIBS})
 
