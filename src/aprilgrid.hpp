@@ -16,7 +16,8 @@
 #ifndef APRILGRID__DETECTOR_HPP
 #define APRILGRID__DETECTOR_HPP
 
-#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/objdetect/aruco_detector.hpp>
 #include <unordered_map>
 #include <vector>
 
@@ -77,9 +78,9 @@ class AprilGrid {
   /// @param ids The IDs of the decoded tags.
   /// @param img_points Vector of marker points in the image coordinate space.
   ///
-  void drawDetectedTags(cv::Mat &image,
-                        std::vector<int> &ids,
-                        std::vector<cv::Point2f> &img_points);
+  static void drawDetectedTags(cv::Mat &image,
+                               std::vector<int> &ids,
+                               std::vector<cv::Point2f> &img_points);
 
   ///
   /// @brief Detects AprilTags in an image.
@@ -92,14 +93,14 @@ class AprilGrid {
   /// @param camera_matrix Matrix of camera coefficients
   /// @param dist_coeffs Vector of distortion coefficients
   ///
-  void drawReprojectionErrors(cv::Mat &image,
-                              std::vector<int> &ids,
-                              std::vector<cv::Point3f> &obj_points,
-                              std::vector<cv::Point2f> &img_points,
-                              cv::Vec3d r_vec,
-                              cv::Vec3d t_vec,
-                              cv::Mat camera_matrix,
-                              cv::Mat dist_coeffs);
+  static void drawReprojectionErrors(cv::Mat &image,
+                                     std::vector<int> &ids,
+                                     std::vector<cv::Point3f> &obj_points,
+                                     std::vector<cv::Point2f> &img_points,
+                                     cv::Vec3d r_vec,
+                                     cv::Vec3d t_vec,
+                                     cv::Mat camera_matrix,
+                                     cv::Mat dist_coeffs);
 
   ///
   /// @brief Struct collecting data for a specific AprilTag dictionary.
@@ -333,9 +334,9 @@ class AprilGrid {
   const double LARGE_IMAGE_THRESHOLD{1000.0};
 
   // Named colors
-  const cv::Scalar CYAN{255, 255, 0};
-  const cv::Scalar MAGENTA{255, 0, 255};
-  const cv::Scalar YELLOW{0, 255, 255};
+  static const cv::Scalar CYAN;
+  static const cv::Scalar MAGENTA;
+  static const cv::Scalar YELLOW;
 };
 
 #endif  // APRILGRID__DETECTOR_HPP

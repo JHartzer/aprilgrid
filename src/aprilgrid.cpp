@@ -17,6 +17,10 @@
 
 #include <opencv2/opencv.hpp>
 
+const cv::Scalar AprilGrid::CYAN{255, 255, 0};
+const cv::Scalar AprilGrid::MAGENTA{255, 0, 255};
+const cv::Scalar AprilGrid::YELLOW{0, 255, 255};
+
 AprilGrid::AprilGrid(cv::aruco::PredefinedDictionaryType dict,
                      unsigned int border_bit,
                      unsigned int separation_bits,

@@ -53,8 +53,8 @@ Finally, this library provides two drawing functions to visualize the tag detect
 ```c++
 cv::Mat image_out;
 cv::cvtColor(image, image_out, cv::COLOR_GRAY2BGR);
-april_grid.drawDetectedTags(image_out, ids, img_points);
-april_grid.drawReprojectionErrors(image_out, ids, obj_points, img_points, r_vec, t_vec, camera_matrix_, dist_coeffs_);
+AprilGrid::drawDetectedTags(image_out, ids, img_points);
+AprilGrid::drawReprojectionErrors(image_out, ids, obj_points, img_points, r_vec, t_vec, camera_matrix_, dist_coeffs_);
 cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 5.0);
 ```
 
