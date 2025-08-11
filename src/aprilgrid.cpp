@@ -15,12 +15,7 @@
 
 #include "aprilgrid.hpp"
 
-#include <algorithm>
-#include <cstring>
-#include <opencv2/calib3d.hpp>
 #include <opencv2/opencv.hpp>
-#include <random>
-#include <stdexcept>
 
 AprilGrid::AprilGrid(cv::aruco::PredefinedDictionaryType dict,
                      unsigned int border_bit,
@@ -61,14 +56,6 @@ AprilGrid::AprilGrid(cv::aruco::PredefinedDictionaryType dict,
     }
   }
 };
-
-// Helper function: random_color
-cv::Scalar AprilGrid::random_color() {
-  static std::random_device rd;
-  static std::mt19937 rng(rd());
-  static std::uniform_int_distribution<> distribution(0, 255);
-  return cv::Scalar(distribution(rng), distribution(rng), distribution(rng));
-}
 
 cv::Mat AprilGrid::poolImage(const cv::Mat &image, int block_size, bool use_max) {
   unsigned int h = image.rows;

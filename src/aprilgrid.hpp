@@ -17,7 +17,6 @@
 #define APRILGRID__DETECTOR_HPP
 
 #include <opencv2/opencv.hpp>
-#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -33,13 +32,14 @@
 class AprilGrid {
  public:
   ///
-  /// @brief Constructs an AprilGrid detector.
+  /// @brief Constructs an AprilGrid.
   /// @param dict The predefined dictionary type for the AprilTags.
   /// @param border_bits The number of black border bits around the tag.
   /// @param separation_bits The number of bits separating adjacent tags in the grid.
   /// @param n_rows The number of rows of tags in the grid.
   /// @param n_cols The number of columns of tags in the grid.
-  /// @param marker_size The size of the marker in meters
+  /// @param marker_size The size of the marker in meters.
+  /// @param starting_id The starting ID of the April grid.
   ///
   AprilGrid(cv::aruco::PredefinedDictionaryType dict,
             unsigned int border_bits,
@@ -255,16 +255,10 @@ class AprilGrid {
 
  private:
   ///
-  /// @brief Generates a random BGR color.
-  /// @return A cv::Scalar representing a random BGR color.
-  ///
-  cv::Scalar random_color();
-
-  ///
   /// @brief Downsamples an image by pooling.
   /// @param image The input image.
   /// @param block_size The size of the pooling window.
-  /// @param use_max If true, uses max pooling. Otherwise, uses average pooling.
+  /// @param use_max If true, uses max pooling. Otherwise, uses min pooling.
   /// @return The downsampled image.
   ///
   cv::Mat poolImage(const cv::Mat &image, int block_size, bool use_max);

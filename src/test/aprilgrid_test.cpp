@@ -34,54 +34,54 @@ class AprilgridDetectorTest : public testing::Test {
 };
 
 TEST_F(AprilgridDetectorTest, full) {
-  auto detector = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1, 0);
+  auto april_grid = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1, 0);
   auto image_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6.png";
   auto image = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
 
   std::vector<std::vector<cv::Point2f>> corners;
   std::vector<int> ids;
-  detector.detectAprilTags(image, corners, ids);
+  april_grid.detectAprilTags(image, corners, ids);
 
   std::vector<cv::Point3f> obj_points;
   std::vector<cv::Point2f> img_points;
-  detector.matchImagePoints(corners, ids, obj_points, img_points);
+  april_grid.matchImagePoints(corners, ids, obj_points, img_points);
 
   cv::Vec3d r_vec, t_vec;
   cv::solvePnP(obj_points, img_points, camera_matrix_, dist_coeffs_, r_vec, t_vec);
 
   cv::Mat image_out;
   cv::cvtColor(image, image_out, cv::COLOR_GRAY2BGR);
-  detector.drawDetectedTags(image_out, ids, img_points);
-  detector.drawReprojectionErrors(
+  april_grid.drawDetectedTags(image_out, ids, img_points);
+  april_grid.drawReprojectionErrors(
       image_out, ids, obj_points, img_points, r_vec, t_vec, camera_matrix_, dist_coeffs_);
-  cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 5.0);
+  cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 0.5);
 
   auto out_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6_out.png";
   cv::imwrite(out_path, image_out);
 }
 
 TEST_F(AprilgridDetectorTest, occluded) {
-  auto detector = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1, 0);
+  auto april_grid = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1, 0);
   auto image_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6_occluded.png";
   auto image = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
 
   std::vector<std::vector<cv::Point2f>> corners;
   std::vector<int> ids;
-  detector.detectAprilTags(image, corners, ids);
+  april_grid.detectAprilTags(image, corners, ids);
 
   std::vector<cv::Point3f> obj_points;
   std::vector<cv::Point2f> img_points;
-  detector.matchImagePoints(corners, ids, obj_points, img_points);
+  april_grid.matchImagePoints(corners, ids, obj_points, img_points);
 
   cv::Vec3d r_vec, t_vec;
   cv::solvePnP(obj_points, img_points, camera_matrix_, dist_coeffs_, r_vec, t_vec);
 
   cv::Mat image_out;
   cv::cvtColor(image, image_out, cv::COLOR_GRAY2BGR);
-  detector.drawDetectedTags(image_out, ids, img_points);
-  detector.drawReprojectionErrors(
+  april_grid.drawDetectedTags(image_out, ids, img_points);
+  april_grid.drawReprojectionErrors(
       image_out, ids, obj_points, img_points, r_vec, t_vec, camera_matrix_, dist_coeffs_);
-  cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 5.0);
+  cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 0.5);
 
   auto out_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6_occluded_out.png";
   cv::imwrite(out_path, image_out);
