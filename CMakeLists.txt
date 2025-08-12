@@ -25,7 +25,19 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     # Build docs
     find_package(Doxygen)
     if(Doxygen_FOUND)
-        add_subdirectory(docs)
+        set(DOXYGEN_EXTRACT_ALL            YES)
+        set(DOXYGEN_BUILTIN_STL_SUPPORT    YES)
+        set(DOXYGEN_JAVADOC_AUTOBRIEF      YES)
+        set(DOXYGEN_GENERATE_HTML          YES)
+        set(DOXYGEN_HAVE_DOT               YES)
+        set(DOXYGEN_IMAGE_PATH             "${PROJECT_SOURCE_DIR}/test/assets")
+        set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+        doxygen_add_docs(documentation
+            aprilgrid/aprilgrid.hpp
+            "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+            WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/include"
+        )
     else()
         message(STATUS "Doxygen not found, not building docs")
     endif()
