@@ -30,7 +30,7 @@ namespace fs = std::filesystem;
 class AprilgridDetectorTest : public testing::Test {
  protected:
   cv::Mat camera_matrix_ = (cv::Mat_<float>(3, 3) << 500, 0, 512, 0, 500, 512, 0, 0, 0);
-  cv::Mat dist_coeffs_{0, 0, 0, 0};
+  cv::Mat dist_coeffs_ = (cv::Mat_<float>(4, 1) << 0, 0, 0, 0);
 };
 
 TEST_F(AprilgridDetectorTest, full) {

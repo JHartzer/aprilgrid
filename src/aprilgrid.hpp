@@ -16,8 +16,8 @@
 #ifndef APRILGRID__DETECTOR_HPP
 #define APRILGRID__DETECTOR_HPP
 
+#include <opencv2/aruco.hpp>
 #include <opencv2/core.hpp>
-#include <opencv2/objdetect/aruco_detector.hpp>
 #include <unordered_map>
 #include <vector>
 
@@ -46,7 +46,7 @@ class AprilGrid {
     double marker_size,
     unsigned int border_bits,
     unsigned int separation_bits,
-    cv::aruco::PredefinedDictionaryType dict,
+    int dict,
     unsigned int starting_id
   );
 
@@ -248,7 +248,7 @@ class AprilGrid {
       0x18A5E861F, 0x2C35B89C3, 0x3347AC48A, 0x7F23E022E, 0x2459068FB, 0xE83BE4B73};
 
   /// @brief A map of all the pre-defined AprilGrid sets using OpenCV
-  const std::unordered_map<cv::aruco::PredefinedDictionaryType, AprilTagData> APRILTAG_DATA_DICT = {
+  const std::unordered_map<int, AprilTagData> APRILTAG_DATA_DICT = {
       {cv::aruco::DICT_APRILTAG_16h5, AprilTagData{4, 5, 1, TAG_16_H5_}},
       {cv::aruco::DICT_APRILTAG_25h9, AprilTagData{5, 7, 2, TAG_25_H7_}},
       {cv::aruco::DICT_APRILTAG_36h10, AprilTagData{5, 9, 2, TAG_25_H9_}},
@@ -304,7 +304,7 @@ class AprilGrid {
                  std::vector<int> &ids);
 
   // Member variables from constructor
-  cv::aruco::PredefinedDictionaryType dict_;  ///< @brief The predefined AprilTags dictionary type.
+  cv::aruco::Dictionary dict_;    ///< @brief The predefined AprilTags dictionary type.
   unsigned int border_bits_;      ///< @brief The number of black border bits around the tag.
   unsigned int separation_bits_;  ///< @brief The number of bits separating adjacent tags
   unsigned int n_rows_;           ///< @brief The number of rows of tags in the grid.

@@ -25,18 +25,19 @@ AprilGrid::AprilGrid(cv::Size size,
                      double marker_size,
                      unsigned int border_bits,
                      unsigned int separation_bits,
-                     cv::aruco::PredefinedDictionaryType dict,
+                     int dict,
                      unsigned int starting_id)
     : separation_bits_(separation_bits),
       n_rows_(size.width),
       n_cols_(size.height),
       marker_size_(marker_size),
       border_bits_(border_bits),
-      dict_(dict),
       starting_id_(starting_id) {
   auto apriltag_data = APRILTAG_DATA_DICT.find(dict);
   if (apriltag_data == APRILTAG_DATA_DICT.end()) {
     throw std::invalid_argument("AprilGrid: Invalid dictionary type!");
+  } else {
+    dict_ = cv::aruco::getPredefinedDictionary(dict);
   }
 
   // Retrieve pre-defined dictionary data
