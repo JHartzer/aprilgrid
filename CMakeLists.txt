@@ -1,65 +1,36 @@
 cmake_minimum_required(VERSION 3.9)
-set (CMAKE_CXX_STANDARD 17)
-project(AprilGrid)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-find_package(OpenCV REQUIRED)
-find_package(GTest REQUIRED)
-
-include_directories(PUBLIC
-    ${OpenCV_INCLUDE_DIRS}
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-    $<INSTALL_INTERFACE:include>
+project(
+    aprilgrid
+    VERSION 0.1
+    DESCRIPTION "A basic C++ library for performing april grid detections and pose estimations using OpenCV"
+    LANGUAGES CXX
 )
 
-add_library(aprilgrid
-    src/aprilgrid.cpp
-)
+# Only do these if this is the main project, and not if it is included through add_subdirectory
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 
-target_link_libraries(aprilgrid ${OpenCV_LIBS})
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-install(
-    TARGETS aprilgrid
-    EXPORT AprilgridTargets
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-)
+    # Build tests
+    find_package(GTest REQUIRED)
+    if(GTest_FOUND)
+        add_subdirectory(test)
+    else()
+        message(STATUS "GTest not found, not building tests")
+    endif()
 
-set(APRILGRID_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/lib/cmake/aprilgrid/")
+    # Build docs
+    find_package(Doxygen)
+    if(Doxygen_FOUND)
+        add_subdirectory(docs)
+    else()
+        message(STATUS "Doxygen not found, not building docs")
+    endif()
+else()
+    message(STATUS "aprilgrid not primary project")
+endif()
 
-install(
-    EXPORT AprilgridTargets
-    FILE AprilgridTargets.cmake
-    DESTINATION "${APRILGRID_INSTALL_PREFIX}"
-    NAMESPACE aprilgrid::
-)
-
-include(CMakePackageConfigHelpers)
-configure_package_config_file(
-    cmake/aprilgrid-config.cmake.in
-    "${CMAKE_CURRENT_BINARY_DIR}/aprilgrid-config.cmake"
-    INSTALL_DESTINATION "${APRILGRID_INSTALL_PREFIX}"
-)
-
-install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/aprilgrid-config.cmake"
-    DESTINATION "${APRILGRID_INSTALL_PREFIX}"
-)
-
-install(FILES src/aprilgrid.hpp DESTINATION include)
-
-add_executable(aprilgrid-test src/test/aprilgrid_test.cpp)
-target_link_libraries(aprilgrid-test aprilgrid ${OpenCV_LIBS})
-
-gtest_add_tests(aprilgrid-test "" AUTO)
-
-target_link_libraries(
-    aprilgrid-test
-    GTest::gtest_main
-)
-
-enable_testing()
-include(GoogleTest)
-gtest_discover_tests(aprilgrid-test)
+add_subdirectory(src)

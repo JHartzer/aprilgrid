@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "aprilgrid.hpp"
+#include "aprilgrid/aprilgrid.hpp"
 
 #include <gtest/gtest.h>
 
@@ -35,7 +35,7 @@ class AprilgridDetectorTest : public testing::Test {
 
 TEST_F(AprilgridDetectorTest, full) {
   auto april_grid = AprilGrid(cv::Size(6, 6), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_36h11, 0);
-  auto image_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6.png";
+  auto image_path = fs::current_path() / "../../test/assets/aprilgrid_6x6.png";
   auto image = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
 
   std::vector<std::vector<cv::Point2f>> corners;
@@ -56,13 +56,13 @@ TEST_F(AprilgridDetectorTest, full) {
       image_out, ids, obj_points, img_points, r_vec, t_vec, camera_matrix_, dist_coeffs_);
   cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 0.5);
 
-  auto out_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6_out.png";
+  auto out_path = fs::current_path() / "../../test/assets/aprilgrid_6x6_out.png";
   cv::imwrite(out_path, image_out);
 }
 
 TEST_F(AprilgridDetectorTest, occluded) {
   auto april_grid = AprilGrid(cv::Size(6, 6), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_36h11, 0);
-  auto image_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6_occluded.png";
+  auto image_path = fs::current_path() / "../../test/assets/aprilgrid_6x6_occluded.png";
   auto image = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
 
   std::vector<std::vector<cv::Point2f>> corners;
@@ -83,6 +83,6 @@ TEST_F(AprilgridDetectorTest, occluded) {
       image_out, ids, obj_points, img_points, r_vec, t_vec, camera_matrix_, dist_coeffs_);
   cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 0.5);
 
-  auto out_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6_occluded_out.png";
+  auto out_path = fs::current_path() / "../../test/assets/aprilgrid_6x6_occluded_out.png";
   cv::imwrite(out_path, image_out);
 }
