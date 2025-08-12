@@ -61,7 +61,7 @@ AprilGrid::AprilGrid(cv::Size size,
   }
 };
 
-cv::Mat AprilGrid::poolImage(const cv::Mat &image, int block_size, bool use_max) {
+cv::Mat AprilGrid::poolImage(const cv::Mat &image, int block_size, bool use_max) const {
   unsigned int h = image.rows;
   unsigned int w = image.cols;
 
@@ -127,7 +127,7 @@ cv::Mat AprilGrid::poolImage(const cv::Mat &image, int block_size, bool use_max)
 
 void AprilGrid::detectAprilTags(const cv::Mat &image,
                                 std::vector<std::vector<cv::Point2f>> &corners,
-                                std::vector<int> &ids) {
+                                std::vector<int> &ids) const {
   // Check if image is valid and convert to grayscale if not already
   cv::Mat gray_img;
   if (image.channels() == 3) {
@@ -208,7 +208,7 @@ void AprilGrid::detectAprilTags(const cv::Mat &image,
   decodeFromCorners(image, final_corners_for_decode, corners, ids);
 }
 
-std::vector<std::vector<cv::Point>> AprilGrid::apriltagCornerThresh(const cv::Mat &image) {
+std::vector<std::vector<cv::Point>> AprilGrid::apriltagCornerThresh(const cv::Mat &image) const {
   // step 1. threshold the image, creating the edge image.
   cv::Mat im_copy = image.clone();
   cv::Mat im_thresh = thresholdImage(im_copy);
@@ -254,7 +254,7 @@ std::vector<std::vector<cv::Point>> AprilGrid::apriltagCornerThresh(const cv::Ma
   return corners;
 }
 
-cv::Mat AprilGrid::thresholdImage(const cv::Mat &image) {
+cv::Mat AprilGrid::thresholdImage(const cv::Mat &image) const {
   int h = image.rows;
   int w = image.cols;
 
@@ -303,7 +303,7 @@ cv::Mat AprilGrid::thresholdImage(const cv::Mat &image) {
 void AprilGrid::decodeTag(const cv::Mat &tag_code,
                           const std::vector<cv::Point2f> &tag_corner,
                           std::vector<std::vector<cv::Point2f>> &corners,
-                          std::vector<int> &ids) {
+                          std::vector<int> &ids) const {
   const int code_size = tag_code.rows * tag_code.cols;
 
   // Pre-allocate rotation buffers to avoid repeated memory allocation
@@ -366,7 +366,7 @@ void AprilGrid::decodeTag(const cv::Mat &tag_code,
 void AprilGrid::decodeFromCorners(const cv::Mat &image,
                                   const std::vector<std::vector<cv::Point2f>> &candidate_corners,
                                   std::vector<std::vector<cv::Point2f>> &corners,
-                                  std::vector<int> &ids) {
+                                  std::vector<int> &ids) const {
   if (image.empty() || image.channels() != 1) {
     std::cerr << "Error: Input image must be a single-channel grayscale image." << std::endl;
     return;
@@ -408,7 +408,7 @@ void AprilGrid::decodeFromCorners(const cv::Mat &image,
 void AprilGrid::matchImagePoints(std::vector<std::vector<cv::Point2f>> &corners,
                                  std::vector<int> &ids,
                                  std::vector<cv::Point3f> &obj_points,
-                                 std::vector<cv::Point2f> &img_points) {
+                                 std::vector<cv::Point2f> &img_points) const {
   if (ids.empty()) {
     return;  // Early exit if no detections
   }

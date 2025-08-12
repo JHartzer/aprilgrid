@@ -58,7 +58,7 @@ class AprilGrid {
   ///
   void detectAprilTags(const cv::Mat &image,
                        std::vector<std::vector<cv::Point2f>> &corners,
-                       std::vector<int> &ids);
+                       std::vector<int> &ids) const;
 
   ///
   /// @brief Detects AprilTags in an image.
@@ -70,7 +70,7 @@ class AprilGrid {
   void matchImagePoints(std::vector<std::vector<cv::Point2f>> &corners,
                         std::vector<int> &ids,
                         std::vector<cv::Point3f> &obj_points,
-                        std::vector<cv::Point2f> &img_points);
+                        std::vector<cv::Point2f> &img_points) const;
 
   ///
   /// @brief Detects AprilTags in an image.
@@ -262,21 +262,21 @@ class AprilGrid {
   /// @param use_max If true, uses max pooling. Otherwise, uses min pooling.
   /// @return The downsampled image.
   ///
-  cv::Mat poolImage(const cv::Mat &image, int block_size, bool use_max);
+  cv::Mat poolImage(const cv::Mat &image, int block_size, bool use_max) const;
 
   ///
   /// @brief Finds candidate corners in the image using thresholding.
   /// @param image The input grayscale image.
   /// @return A vector of contours, where each contour represents a potential tag corner cluster.
   ///
-  std::vector<std::vector<cv::Point>> apriltagCornerThresh(const cv::Mat &image);
+  std::vector<std::vector<cv::Point>> apriltagCornerThresh(const cv::Mat &image) const;
 
   ///
   /// @brief Applies an adaptive threshold to an image to binarize it.
   /// @param image The input grayscale image.
   /// @return The binarized image.
   ///
-  cv::Mat thresholdImage(const cv::Mat &image);
+  cv::Mat thresholdImage(const cv::Mat &image) const;
 
   ///
   /// @brief Decodes potential AprilTags from a list of corner candidates.
@@ -289,7 +289,7 @@ class AprilGrid {
   void decodeFromCorners(const cv::Mat &image,
                          const std::vector<std::vector<cv::Point2f>> &candidate_corners,
                          std::vector<std::vector<cv::Point2f>> &corners,
-                         std::vector<int> &ids);
+                         std::vector<int> &ids) const;
 
   ///
   /// @brief Decodes a single potential tag code and adds it to the list of detections if valid.
@@ -301,7 +301,7 @@ class AprilGrid {
   void decodeTag(const cv::Mat &tag_code,
                  const std::vector<cv::Point2f> &tag_corner,
                  std::vector<std::vector<cv::Point2f>> &corners,
-                 std::vector<int> &ids);
+                 std::vector<int> &ids) const;
 
   // Member variables from constructor
   cv::aruco::Dictionary dict_;    ///< @brief The predefined AprilTags dictionary type.
