@@ -34,21 +34,21 @@ class AprilGrid {
  public:
   ///
   /// @brief Constructs an AprilGrid.
-  /// @param dict The predefined dictionary type for the AprilTags.
+  /// @param size The size of the board in x and y directions (columns and rows).
+  /// @param marker_size The size of the marker in meters.
   /// @param border_bits The number of black border bits around the tag.
   /// @param separation_bits The number of bits separating adjacent tags in the grid.
-  /// @param n_rows The number of rows of tags in the grid.
-  /// @param n_cols The number of columns of tags in the grid.
-  /// @param marker_size The size of the marker in meters.
+  /// @param dict The predefined dictionary type for the AprilTags.
   /// @param starting_id The starting ID of the April grid.
   ///
-  AprilGrid(cv::aruco::PredefinedDictionaryType dict,
-            unsigned int border_bits,
-            unsigned int separation_bits,
-            unsigned int n_rows,
-            unsigned int n_cols,
-            double marker_size,
-            unsigned int starting_id);
+  AprilGrid(
+    cv::Size size,
+    double marker_size,
+    unsigned int border_bits,
+    unsigned int separation_bits,
+    cv::aruco::PredefinedDictionaryType dict,
+    unsigned int starting_id
+  );
 
   ///
   /// @brief Detects AprilTags in an image.

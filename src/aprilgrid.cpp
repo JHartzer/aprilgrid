@@ -21,19 +21,18 @@ const cv::Scalar AprilGrid::CYAN{255, 255, 0};
 const cv::Scalar AprilGrid::MAGENTA{255, 0, 255};
 const cv::Scalar AprilGrid::YELLOW{0, 255, 255};
 
-AprilGrid::AprilGrid(cv::aruco::PredefinedDictionaryType dict,
-                     unsigned int border_bit,
-                     unsigned int separation_bits,
-                     unsigned int n_rows,
-                     unsigned int n_cols,
+AprilGrid::AprilGrid(cv::Size size,
                      double marker_size,
+                     unsigned int border_bits,
+                     unsigned int separation_bits,
+                     cv::aruco::PredefinedDictionaryType dict,
                      unsigned int starting_id)
-    : dict_(dict),
-      border_bits_(border_bit),
-      separation_bits_(separation_bits),
-      n_rows_(n_rows),
-      n_cols_(n_cols),
+    : separation_bits_(separation_bits),
+      n_rows_(size.width),
+      n_cols_(size.height),
       marker_size_(marker_size),
+      border_bits_(border_bits),
+      dict_(dict),
       starting_id_(starting_id) {
   auto apriltag_data = APRILTAG_DATA_DICT.find(dict);
   if (apriltag_data == APRILTAG_DATA_DICT.end()) {

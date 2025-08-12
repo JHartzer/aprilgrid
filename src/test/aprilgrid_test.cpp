@@ -34,7 +34,7 @@ class AprilgridDetectorTest : public testing::Test {
 };
 
 TEST_F(AprilgridDetectorTest, full) {
-  auto april_grid = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1, 0);
+  auto april_grid = AprilGrid(cv::Size(6, 6), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_36h11, 0);
   auto image_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6.png";
   auto image = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
 
@@ -61,7 +61,7 @@ TEST_F(AprilgridDetectorTest, full) {
 }
 
 TEST_F(AprilgridDetectorTest, occluded) {
-  auto april_grid = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1, 0);
+  auto april_grid = AprilGrid(cv::Size(6, 6), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_36h11, 0);
   auto image_path = fs::current_path() / "../src/test/assets/aprilgrid_6x6_occluded.png";
   auto image = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
 
