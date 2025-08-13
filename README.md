@@ -24,8 +24,12 @@ sudo make install
 This library aims to mimic the OpenCV logical steps for fiducial board detection and pose estimation. The AprilGrid object is constructed by defining the tag dictionary as well as information about the grid structure and dimensions.
 
 ```cpp
-auto april_grid = AprilGrid(cv::aruco::DICT_APRILTAG_36h11, 2, 3, 6, 6, 0.1, 0);
+
+auto april_grid = AprilGrid(cv::Size(6, 6), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_36h11, 0);
 ```
+
+### Board Pose Estimation
+
 Given an image, detect all April tags from the current image.
 
 ```cpp
@@ -59,12 +63,13 @@ AprilGrid::drawReprojectionErrors(image_out, ids, obj_points, img_points, r_vec,
 cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 5.0);
 ```
 
+### Board Image Generation
 
-## Examples
-A full board detection:
+Additionally, it is possible to generate board images for printing using the draw function.
 
-![](test/assets/aprilgrid_6x6_out.png)
-
-Or with occlusions:
-
-![](test/assets/aprilgrid_6x6_occluded_out.png)
+```cpp
+auto april_grid = AprilGrid(cv::Size(6, 6), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_36h11, 0);
+cv::Mat image_out;
+unsigned int width{400};
+april_grid.draw(width, image_out);
+```

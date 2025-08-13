@@ -103,6 +103,13 @@ class AprilGrid {
                                      cv::Mat dist_coeffs);
 
   ///
+  /// @brief Draws an image of the aprilgrid
+  /// @param width The output image width
+  /// @param image The output image of the aprilgrid
+  ///
+  void draw(unsigned int width, cv::Mat &image) const;
+
+  ///
   /// @brief Struct collecting data for a specific AprilTag dictionary.
   ///
   typedef struct AprilTagData {

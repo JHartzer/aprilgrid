@@ -480,3 +480,55 @@ void AprilGrid::drawReprojectionErrors(cv::Mat &image,
     cv::line(image, img_points[i], projected_corners[i], YELLOW, 2);
   }
 }
+
+void AprilGrid::draw(unsigned int width, cv::Mat &image) const {
+  // Create minimum-sized boolean array
+  unsigned int grid_width_bits = marker_bits_ * n_cols_ + (n_cols_ + 1) * separation_bits_;
+  unsigned int grid_height_bits = marker_bits_ * n_rows_ + (n_rows_ + 1) * separation_bits_;
+  unsigned int checkerboard_size = marker_bits_ + separation_bits_;
+
+  cv::Mat bit_image(cv::Size(grid_width_bits, grid_height_bits), CV_8UC1, cv::Scalar(255));
+
+  // Fill Checkerboard
+  for (unsigned int i = 0; i <= n_rows_; ++i){
+    for (unsigned int j = 0; j <= n_cols_; ++j){
+      unsigned int x0 = checkerboard_size * i;
+      unsigned int x1 = x0+separation_bits_;
+      unsigned int y0 = checkerboard_size * j;
+      unsigned int y1 = y0+separation_bits_;
+      bit_image(cv::Range(x0, x1), cv::Range(y0, y1)).setTo(0);
+    }
+  }
+
+  // Fill Tag Space
+  for (unsigned int i = 0; i < n_rows_; ++i){
+    for (unsigned int j = 0; j < n_cols_; ++j){
+      unsigned int x0 = separation_bits_ + checkerboard_size * i;
+      unsigned int x1 = x0 + marker_bits_;
+      unsigned int y0 = separation_bits_ + checkerboard_size * j;
+      unsigned int y1 = y0 + marker_bits_;
+      bit_image(cv::Range(x0, x1), cv::Range(y0, y1)).setTo(0);
+    }
+  }
+
+  // Write tags
+  for (unsigned int i = 0; i < n_rows_; ++i){
+    for (unsigned int j = 0; j < n_cols_; ++j){
+      long code = codes_[i * n_cols_ + j];
+      unsigned int off_x = separation_bits_ + border_bits_ + checkerboard_size * j;
+      unsigned int off_y = grid_height_bits - separation_bits_ - border_bits_ - tag_bits_ - checkerboard_size * i;
+      for (unsigned int m = 0; m < tag_bits_; ++m){
+        for (unsigned int n = 0; n < tag_bits_; ++n){
+          unsigned int bit_shift = tag_bits_*tag_bits_ - (tag_bits_*m+n) - 1;
+          if (code & (1L << bit_shift)){
+            bit_image.at<uchar>(off_y+m, off_x+n) = 255;
+          }
+        }
+      }
+    }
+  }
+
+  // Scale bit image to output
+  double scale = std::max(1.0, (double)width / (double)grid_width_bits);
+  cv::resize(bit_image, image, cv::Size(0,0), scale, scale, cv::INTER_NEAREST);
+}
