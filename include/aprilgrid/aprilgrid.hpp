@@ -41,14 +41,12 @@ class AprilGrid {
   /// @param dict The predefined dictionary type for the AprilTags.
   /// @param starting_id The starting ID of the April grid.
   ///
-  AprilGrid(
-    cv::Size size,
-    double marker_size,
-    unsigned int border_bits,
-    unsigned int separation_bits,
-    int dict,
-    unsigned int starting_id
-  );
+  AprilGrid(cv::Size size,
+            double marker_size,
+            unsigned int border_bits,
+            unsigned int separation_bits,
+            int dict,
+            unsigned int starting_id);
 
   ///
   /// @brief Detects AprilTags in an image.

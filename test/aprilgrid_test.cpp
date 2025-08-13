@@ -59,10 +59,10 @@ TEST_F(AprilgridDetectorTest, draw_aprilgrid_6x6_occluded) {
 
   // Define the parallelogram points
   std::vector<cv::Point> pts;
-  pts.push_back(cv::Point(0,     100));
+  pts.push_back(cv::Point(0, 100));
   pts.push_back(cv::Point(width, 200));
   pts.push_back(cv::Point(width, 350));
-  pts.push_back(cv::Point(0,     250));
+  pts.push_back(cv::Point(0, 250));
 
   // Wrap in a vector of polygons
   std::vector<std::vector<cv::Point>> fillContAll;
