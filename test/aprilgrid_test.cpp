@@ -96,7 +96,7 @@ TEST_F(AprilgridDetectorTest, detect_aprilgrid_4x6) {
   april_grid.drawDetectedTags(image_out, ids, img_points);
   april_grid.drawReprojectionErrors(
       image_out, ids, obj_points, img_points, r_vec, t_vec, camera_matrix_, dist_coeffs_);
-  cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 0.5);
+  cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 0.3);
 
   auto out_path = fs::current_path() / "../../test/assets/aprilgrid_4x6_out.png";
   cv::imwrite(out_path, image_out);
@@ -123,7 +123,7 @@ TEST_F(AprilgridDetectorTest, detect_aprilgrid_6x6) {
   april_grid.drawDetectedTags(image_out, ids, img_points);
   april_grid.drawReprojectionErrors(
       image_out, ids, obj_points, img_points, r_vec, t_vec, camera_matrix_, dist_coeffs_);
-  cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 0.5);
+  cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 0.3);
 
   auto out_path = fs::current_path() / "../../test/assets/aprilgrid_6x6_out.png";
   cv::imwrite(out_path, image_out);
@@ -150,7 +150,7 @@ TEST_F(AprilgridDetectorTest, detect_aprilgrid_6x6_occluded) {
   april_grid.drawDetectedTags(image_out, ids, img_points);
   april_grid.drawReprojectionErrors(
       image_out, ids, obj_points, img_points, r_vec, t_vec, camera_matrix_, dist_coeffs_);
-  cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 0.5);
+  cv::drawFrameAxes(image_out, camera_matrix_, dist_coeffs_, r_vec, t_vec, 0.3);
 
   auto out_path = fs::current_path() / "../../test/assets/aprilgrid_6x6_occluded_out.png";
   cv::imwrite(out_path, image_out);

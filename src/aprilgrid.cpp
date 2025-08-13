@@ -431,15 +431,15 @@ void AprilGrid::matchImagePoints(std::vector<std::vector<cv::Point2f>> &corners,
     int col = (tag_id - starting_id_) % n_cols_;
     const float off_y = row * grid_size;
     const float off_x = col * grid_size;
-    const float x1 = grid_width - (off_x + marker_size_);
-    const float x2 = grid_width - off_x;
+    const float x1 = off_x;
+    const float x2 = off_x + marker_size_;
     const float y1 = off_y;
     const float y2 = off_y + marker_size_;
 
-    obj_points.emplace_back(x2, y1, 0.0f);
     obj_points.emplace_back(x1, y1, 0.0f);
-    obj_points.emplace_back(x1, y2, 0.0f);
+    obj_points.emplace_back(x2, y1, 0.0f);
     obj_points.emplace_back(x2, y2, 0.0f);
+    obj_points.emplace_back(x1, y2, 0.0f);
   }
 }
 
