@@ -39,7 +39,10 @@ TEST_F(AprilgridDetectorTest, draw_aprilgrid_4x6) {
   unsigned int width{400};
   april_grid.draw(width, image_out);
   auto out_path = fs::current_path() / "../../test/assets/aprilgrid_4x6.png";
+  fs::remove(out_path);
+  ASSERT_FALSE(fs::exists(out_path));
   cv::imwrite(out_path, image_out);
+  ASSERT_TRUE(fs::exists(out_path));
 }
 
 TEST_F(AprilgridDetectorTest, draw_aprilgrid_6x6) {
@@ -48,7 +51,10 @@ TEST_F(AprilgridDetectorTest, draw_aprilgrid_6x6) {
   unsigned int width{400};
   april_grid.draw(width, image_out);
   auto out_path = fs::current_path() / "../../test/assets/aprilgrid_6x6.png";
+  fs::remove(out_path);
+  ASSERT_FALSE(fs::exists(out_path));
   cv::imwrite(out_path, image_out);
+  ASSERT_TRUE(fs::exists(out_path));
 }
 
 TEST_F(AprilgridDetectorTest, draw_aprilgrid_6x6_occluded) {
@@ -72,7 +78,10 @@ TEST_F(AprilgridDetectorTest, draw_aprilgrid_6x6_occluded) {
   cv::fillPoly(image_out, fillContAll, cv::Scalar(255, 255, 255));
 
   auto out_path = fs::current_path() / "../../test/assets/aprilgrid_6x6_occluded.png";
+  fs::remove(out_path);
+  ASSERT_FALSE(fs::exists(out_path));
   cv::imwrite(out_path, image_out);
+  ASSERT_TRUE(fs::exists(out_path));
 }
 
 TEST_F(AprilgridDetectorTest, detect_aprilgrid_4x6) {
