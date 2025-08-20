@@ -36,7 +36,7 @@ class AprilgridDetectorTest : public testing::Test {
 TEST_F(AprilgridDetectorTest, draw_aprilgrid_16h5_4x4) {
   auto april_grid = AprilGrid(cv::Size(4, 4), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_16h5, 0);
   cv::Mat image_out;
-  unsigned int width{400};
+  unsigned int width{600};
   april_grid.draw(width, image_out);
   auto out_path = fs::current_path() / "../../test/assets/aprilgrid_16h5_4x4.png";
   fs::remove(out_path);
@@ -46,9 +46,9 @@ TEST_F(AprilgridDetectorTest, draw_aprilgrid_16h5_4x4) {
 }
 
 TEST_F(AprilgridDetectorTest, draw_aprilgrid_25h9_4x6) {
-  auto april_grid = AprilGrid(cv::Size(4, 6), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_25h9, 0);
+  auto april_grid = AprilGrid(cv::Size(3, 6), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_25h9, 0);
   cv::Mat image_out;
-  unsigned int width{400};
+  unsigned int width{600};
   april_grid.draw(width, image_out);
   auto out_path = fs::current_path() / "../../test/assets/aprilgrid_25h9_4x6.png";
   fs::remove(out_path);
@@ -60,7 +60,7 @@ TEST_F(AprilgridDetectorTest, draw_aprilgrid_25h9_4x6) {
 TEST_F(AprilgridDetectorTest, draw_aprilgrid_36h10_6x6) {
   auto april_grid = AprilGrid(cv::Size(6, 6), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_36h10, 0);
   cv::Mat image_out;
-  unsigned int width{400};
+  unsigned int width{600};
   april_grid.draw(width, image_out);
   auto out_path = fs::current_path() / "../../test/assets/aprilgrid_36h10_6x6.png";
   fs::remove(out_path);
@@ -72,7 +72,7 @@ TEST_F(AprilgridDetectorTest, draw_aprilgrid_36h10_6x6) {
 TEST_F(AprilgridDetectorTest, draw_aprilgrid_36h11_6x6_occluded) {
   auto april_grid = AprilGrid(cv::Size(6, 6), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_36h11, 0);
   cv::Mat image_out;
-  unsigned int width{400};
+  unsigned int width{600};
   april_grid.draw(width, image_out);
 
   // Define the parallelogram points
@@ -124,7 +124,7 @@ TEST_F(AprilgridDetectorTest, detect_aprilgrid_16h5_4x4) {
 }
 
 TEST_F(AprilgridDetectorTest, detect_aprilgrid_25h9_4x6) {
-  auto april_grid = AprilGrid(cv::Size(4, 6), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_25h9, 0);
+  auto april_grid = AprilGrid(cv::Size(3, 6), 0.1, 2, 3, cv::aruco::DICT_APRILTAG_25h9, 0);
   auto image_path = fs::current_path() / "../../test/assets/aprilgrid_25h9_4x6.png";
   auto image = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
 
