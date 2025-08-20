@@ -1,6 +1,8 @@
 # aprilgrid
 
-A basic C++ library for performing april grid detections and pose estimations using OpenCV
+A basic C++ library for performing April grid detections and pose estimations using OpenCV
+
+![AprilGrid Detections](test/assets/aprilgrid_25h9_4x6_out.png)
 
 
 ## Build
