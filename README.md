@@ -10,10 +10,14 @@ A basic C++ library for performing April grid detections and pose estimations us
 mkdir build -p
 cd build
 cmake ../
-cmake --build .
+cmake --build . --config Release
 sudo make install
 ```
 
+## Build documentation
+```bash
+cmake --build . --config Release -j --target documentation
+```
 
 ## Test
 ```
