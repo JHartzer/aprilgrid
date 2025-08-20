@@ -33,30 +33,40 @@ AprilGrid::AprilGrid(cv::Size size,
       marker_size_(marker_size),
       border_bits_(border_bits),
       starting_id_(starting_id) {
-  auto apriltag_data = APRILTAG_DATA_DICT.find(dict);
-  if (apriltag_data == APRILTAG_DATA_DICT.end()) {
+  auto hamming_distance_itr = HAMMING_DISTANCE_MAP.find(dict);
+  if (hamming_distance_itr == HAMMING_DISTANCE_MAP.end()) {
     throw std::invalid_argument("AprilGrid: Invalid dictionary type!");
   } else {
     dict_ = cv::aruco::getPredefinedDictionary(dict);
   }
 
-  // Retrieve pre-defined dictionary data
-  tag_bits_ = apriltag_data->second.tag_bits;
-  min_distance_ = apriltag_data->second.min_distance;
-  hamming_thresh_ = apriltag_data->second.hamming_thresh;
-  codes_ = apriltag_data->second.codes;
+  std::cout << dict_.maxCorrectionBits << std::endl;
 
+  // Retrieve pre-defined dictionary data
+  tag_bits_ = dict_.markerSize;
+
+  // Calculate data based on tag bits
   marker_bits_ = tag_bits_ + 2 * border_bits_;
   min_cluster_pixels_ = marker_bits_ * marker_bits_;
-
   const int num_bits = tag_bits_ * tag_bits_;
 
-  // Convert the integer codes into a matrix of bits (CV_8U with values 0 or 1)
-  tag_bit_list_ = cv::Mat(codes_.size(), num_bits, CV_8U);
-  for (size_t i = 0; i < codes_.size(); ++i) {
-    uint64_t code = codes_[i];
-    for (int j = 0; j < num_bits; ++j) {
-      tag_bit_list_.at<uchar>(i, j) = (code >> (num_bits - 1 - j)) & 1;
+  // Rough max distance to consider
+  hamming_thresh_ = ceil(hamming_distance_itr->second / 5.0);
+
+  // Convert the tag codes into a matrix of bits (CV_8U with values 0 or 1)
+  int n_bytes = ceil(num_bits / 8.0);
+  tag_bit_list_ = cv::Mat::zeros(dict_.bytesList.rows, num_bits, CV_8U);
+  for (size_t i = 0; i < dict_.bytesList.rows; ++i) {
+    int remaining_bits = num_bits;
+    for (int j = 0; j < n_bytes; ++j) {
+      int byte = dict_.bytesList.at<uchar>(i, j);
+      int sub_bits = std::min(8, remaining_bits);
+      for (int k = 1; k <= sub_bits; ++k){
+        int bit = (byte >> (sub_bits - k)) & 1;
+        int idx = num_bits-(j*8+k);
+        tag_bit_list_.at<uchar>(i, idx) = bit;
+      }
+      remaining_bits -= sub_bits;
     }
   }
 };
@@ -514,14 +524,13 @@ void AprilGrid::draw(unsigned int width, cv::Mat &image) const {
   // Write tags
   for (unsigned int i = 0; i < n_rows_; ++i) {
     for (unsigned int j = 0; j < n_cols_; ++j) {
-      long code = codes_[i * n_cols_ + j];
       unsigned int off_x = separation_bits_ + border_bits_ + checkerboard_size * j;
       unsigned int off_y =
           grid_height_bits - separation_bits_ - border_bits_ - tag_bits_ - checkerboard_size * i;
       for (unsigned int m = 0; m < tag_bits_; ++m) {
         for (unsigned int n = 0; n < tag_bits_; ++n) {
           unsigned int bit_shift = tag_bits_ * tag_bits_ - (tag_bits_ * m + n) - 1;
-          if (code & (1L << bit_shift)) {
+          if (tag_bit_list_.at<uchar>(i * n_cols_ + j, tag_bits_ * m + n)) {
             bit_image.at<uchar>(off_y + m, off_x + n) = 255;
           }
         }
