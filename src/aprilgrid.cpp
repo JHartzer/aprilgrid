@@ -40,8 +40,6 @@ AprilGrid::AprilGrid(cv::Size size,
     dict_ = cv::aruco::getPredefinedDictionary(dict);
   }
 
-  std::cout << dict_.maxCorrectionBits << std::endl;
-
   // Retrieve pre-defined dictionary data
   tag_bits_ = dict_.markerSize;
 
