@@ -3,11 +3,11 @@
     "customizations": {
         "vscode": {
             "extensions": [
+                "llvm-vs-code-extensions.vscode-clangd",
                 "mhutchie.git-graph",
-                "ms-vscode.cpptools-extension-pack",
-                "ms-vscode.cpptools",
+                "ms-vscode.cmake-tools",
                 "streetsidesoftware.code-spell-checker",
-                "twxs.cmake"
+                "zachflower.uncrustify"
             ]
         }
     },
