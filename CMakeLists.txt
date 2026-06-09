@@ -43,6 +43,10 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     else()
         message(STATUS "Doxygen not found, not building docs")
     endif()
-else()
-    message(STATUS "aprilgrid not primary project")
+endif()
+
+# ROS 2 / Ament Package Integration
+find_package(ament_cmake QUIET)
+if(ament_cmake_FOUND)
+    ament_package()
 endif()
