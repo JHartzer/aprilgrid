@@ -4,6 +4,10 @@ A basic C++ library for performing April grid detections and pose estimations us
 
 ![AprilGrid Detections](test/assets/aprilgrid_25h9_4x6_out.png)
 
+## Dependencies
+```
+sudo apt-get install -y cmake libgtest-dev libopencv-dev
+```
 
 ## Build
 ```bash
